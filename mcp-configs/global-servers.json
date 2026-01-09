@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "n8n-mcp": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["n8n-mcp"],
+      "env": {}
+    },
+    "elevenlabs": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["elevenlabs-mcp"],
+      "env": {
+        "ELEVENLABS_API_KEY": "YOUR_ELEVENLABS_API_KEY_HERE"
+      }
+    },
+    "mem0": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["@pinkpixel/mem0-mcp"],
+      "env": {
+        "MEM0_API_KEY": "YOUR_MEM0_API_KEY_HERE",
+        "DEFAULT_USER_ID": "elizabeth"
+      }
+    },
+    "cloner-mcp": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/Users/motorthings/Documents/GitHub/cloner-mcp",
+        "run",
+        "mcp_server.py"
+      ],
+      "env": {}
+    },
+    "neo4j-thesis": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@neobarrientos/neo4j_mcpserver"],
+      "env": {
+        "NEO4J_URI": "YOUR_NEO4J_URI_HERE",
+        "NEO4J_USER": "neo4j",
+        "NEO4J_PASSWORD": "YOUR_NEO4J_PASSWORD_HERE"
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "hooks": {
+    "PreCompact": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/motorthings/.claude/hooks/precompact-context-preserver.py",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/Users/motorthings/.claude/hooks/userpromptsubmit-context-injector.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

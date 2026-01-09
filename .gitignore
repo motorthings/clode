@@ -1,0 +1,27 @@
+# API Keys and Secrets
+*.key
+*.secret
+*_key.txt
+*_secret.txt
+
+# Machine-specific configs
+.machine-config.json
+
+# Backup files
+*.backup
+*.bak
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test files
+test_*
+scratch/
