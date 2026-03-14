@@ -1,0 +1,1 @@
+List all repositories in `/Users/motorthings/Documents/GitHub/` and present them as options using the AskUserQuestion tool. Let the user pick which repo they want to work in. Once they select one, change your working directory to that repo using `cd` via the Bash tool, then confirm the switch and run `git status` to show the current state of the selected repo.
