@@ -207,11 +207,13 @@ def generate_enriched_summary(parsed: dict, api_key: str) -> str:
         transcript=parsed["transcript"][:6000],
     )
 
+    log.info(f"  → calling API: {parsed['title']}")
     message = client.messages.create(
         model="claude-opus-4-6",
         max_tokens=2500,
         system=SYSTEM_PROMPT,
         messages=[{"role": "user", "content": prompt}],
+        timeout=60.0,
     )
     return message.content[0].text
 
@@ -263,8 +265,10 @@ def process_one(parsed: dict, api_key: str) -> str:
 
     enriched_text = generate_enriched_summary(parsed, api_key)
 
+    date_field = f"date: {parsed['date']}\n" if parsed['date'] else ""
     enriched_content = (
         f"---\n{parsed['frontmatter'].strip()}\n"
+        f"{date_field}"
         f"enriched_at: {datetime.now().isoformat()}\n---\n\n"
         f"{enriched_text}\n"
     )
@@ -322,8 +326,11 @@ def main():
         jobs = collect_legacy_jobs(enriched)
         log.info(f"Backfill mode: {len(jobs)} legacy files to process")
     else:
-        jobs = collect_inline_jobs(enriched, archived)
-        log.info(f"Watch mode: {len(jobs)} new inline files to process")
+        # Normal mode: process new files from Summaries/ (where Granola sync deposits them)
+        jobs = collect_legacy_jobs(enriched)
+        # Also catch any inline-format files dropped directly in Granola/ root
+        jobs += collect_inline_jobs(enriched, archived)
+        log.info(f"Watch mode: {len(jobs)} new files to process")
 
     run(jobs, workers=args.workers)
     log.info("Done")
