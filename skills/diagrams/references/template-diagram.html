@@ -1,0 +1,329 @@
+## Mode 1: Diagram Page Template
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAGE TITLE</title>
+<link rel="icon" type="image/svg+xml" href="../icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Source+Code+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --font-display: 'Fraunces', Georgia, serif;
+    --font-mono: 'Source Code Pro', 'SF Mono', Consolas, monospace;
+    --bg: #eef4f9; --surface: #ffffff; --surface2: #f5f8fc;
+    --border: #c8daea; --border-bright: #a0bedb;
+    --text: #0a1628; --text-dim: #3d5a7a; --text-muted: #7a9ab8;
+    --primary: #e8621a; --primary-dim: rgba(232,98,26,0.08);
+    --secondary: #4a90c4; --secondary-dim: rgba(74,144,196,0.08);
+    --metric: #0f766e; --metric-dim: rgba(15,118,110,0.06);
+    --amber: #b45309; --amber-dim: rgba(180,83,9,0.08);
+    --violet: #7c3aed; --violet-dim: rgba(124,58,237,0.08);
+    --rose: #e11d48; --rose-dim: rgba(225,29,72,0.08);
+    --slate: #475569; --slate-dim: rgba(71,85,105,0.08);
+  }
+  html.dark {
+    --bg: #0a1628; --surface: #132240; --surface2: #1a2d52;
+    --border: #1a2d52; --border-bright: #2d4570;
+    --text: #e8edf5; --text-dim: #9bb0d4; --text-muted: #5e7aa3;
+    --primary: #f37021; --primary-dim: rgba(243,112,33,0.12);
+    --secondary: #6cace4; --secondary-dim: rgba(108,172,228,0.12);
+    --metric: #2dd4bf; --metric-dim: rgba(45,212,191,0.08);
+    --amber: #f59e0b; --amber-dim: rgba(245,158,11,0.12);
+    --violet: #a78bfa; --violet-dim: rgba(167,139,250,0.12);
+    --rose: #fb7185; --rose-dim: rgba(251,113,133,0.12);
+    --slate: #94a3b8; --slate-dim: rgba(148,163,184,0.12);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(ellipse at 80% 0%, var(--primary-dim) 0%, transparent 50%),
+      radial-gradient(ellipse at 20% 60%, var(--secondary-dim) 0%, transparent 40%);
+    color: var(--text); font-family: var(--font-display);
+    min-height: 100vh; line-height: 1.7; padding: 0 32px 80px;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  .nav {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+    border-bottom: 1px solid var(--border);
+    margin: 0 -32px 32px; padding: 0 32px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .nav-inner {
+    max-width: 1000px; margin: 0 auto; padding: 12px 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.5px; color: var(--primary);
+  }
+  .theme-toggle {
+    width: 36px; height: 36px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface);
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--text-dim); transition: all 0.2s;
+  }
+  .theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
+
+  .container { max-width: 1000px; margin: 0 auto; }
+
+  @keyframes fadeUp {
+    from { opacity:0; transform:translateY(12px); }
+    to { opacity:1; transform:translateY(0); }
+  }
+  .animate { animation: fadeUp 0.4s ease-out both; animation-delay: calc(var(--i, 0) * 0.05s); }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration:0.01ms !important; animation-delay:0ms !important; }
+  }
+
+  /* Hero */
+  .hero { text-align: center; padding: 40px 0 20px; animation: fadeUp 0.5s ease-out; }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 16px; background: var(--primary-dim);
+    border: 1px solid var(--primary); border-radius: 20px;
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+    color: var(--primary); letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .hero h1 {
+    font-size: 44px; font-weight: 800; letter-spacing: -0.5px;
+    margin-bottom: 10px; color: var(--text);
+  }
+  .hero .subtitle { font-size: 19px; color: var(--text-dim); max-width: 600px; margin: 0 auto; }
+
+  /* Mermaid container */
+  .mermaid-wrap {
+    position: relative; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 14px;
+    padding: 36px 24px; overflow: auto; margin: 32px 0;
+    animation: fadeUp 0.4s ease-out both; animation-delay: 0.08s;
+  }
+  .mermaid-wrap .mermaid {
+    display: flex; justify-content: center;
+    transition: transform 0.2s ease; transform-origin: top center;
+  }
+  .mermaid-wrap.is-zoomed { cursor: grab; }
+  .mermaid-wrap.is-panning { cursor: grabbing; user-select: none; }
+  .zoom-controls {
+    position: absolute; top: 10px; right: 10px; z-index: 10;
+    display: flex; gap: 2px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 8px; padding: 3px;
+  }
+  .zoom-controls button {
+    width: 30px; height: 30px; border: none; background: transparent;
+    color: var(--text-dim); font-family: var(--font-mono); font-size: 16px;
+    cursor: pointer; border-radius: 5px; display: flex; align-items: center;
+    justify-content: center; transition: background 0.15s, color 0.15s;
+  }
+  .zoom-controls button:hover { background: var(--border); color: var(--text); }
+  .mermaid-wrap { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .mermaid-wrap::-webkit-scrollbar { width:6px; height:6px; }
+  .mermaid-wrap::-webkit-scrollbar-track { background:transparent; }
+  .mermaid-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+  /* Mermaid SVG overrides */
+  .mermaid .nodeLabel { font-family: var(--font-display) !important; font-size: 15px !important; }
+  .mermaid .edgeLabel { font-family: var(--font-mono) !important; font-size: 11px !important; }
+  .mermaid .node rect, .mermaid .node circle, .mermaid .node polygon { stroke-width: 1.5px !important; }
+
+  /* Mermaid classDef CSS overrides — needed because Mermaid can't read CSS vars */
+  .mermaid g.input rect, .mermaid g.input polygon, .mermaid g.input circle { fill: var(--amber-dim) !important; stroke: var(--amber) !important; }
+  .mermaid g.entry rect, .mermaid g.entry polygon, .mermaid g.entry circle { fill: var(--surface2) !important; stroke: var(--border-bright) !important; }
+  .mermaid g.research rect, .mermaid g.research polygon, .mermaid g.research circle { fill: var(--violet-dim) !important; stroke: var(--violet) !important; }
+  .mermaid g.agent rect, .mermaid g.agent polygon, .mermaid g.agent circle { fill: var(--secondary-dim) !important; stroke: var(--secondary) !important; }
+  .mermaid g.profile rect, .mermaid g.profile polygon, .mermaid g.profile circle { fill: var(--slate-dim) !important; stroke: var(--slate) !important; }
+  .mermaid g.output rect, .mermaid g.output polygon, .mermaid g.output circle { fill: var(--metric-dim) !important; stroke: var(--metric) !important; }
+  .mermaid g.warn rect, .mermaid g.warn polygon, .mermaid g.warn circle { fill: var(--amber-dim) !important; stroke: var(--amber) !important; stroke-dasharray: 4 3 !important; }
+  .mermaid g.closed rect, .mermaid g.closed polygon, .mermaid g.closed circle { fill: var(--rose-dim) !important; stroke: var(--rose) !important; }
+  .mermaid g.flow rect, .mermaid g.flow polygon, .mermaid g.flow circle { fill: var(--primary-dim) !important; stroke: var(--primary) !important; }
+  .mermaid g.stage rect, .mermaid g.stage polygon, .mermaid g.stage circle { fill: var(--surface2) !important; stroke: var(--border) !important; }
+  .mermaid g.stage .nodeLabel { fill: var(--text-dim) !important; }
+
+  /* Components: detail section */
+  .detail-section { margin-bottom: 40px; }
+  .detail-section h2 {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: var(--primary); margin-bottom: 16px;
+  }
+
+  /* Context cards */
+  .context-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
+  .context-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid; border-radius: 0 10px 10px 0;
+    padding: 16px 18px; font-size: 14px; line-height: 1.5;
+  }
+  .context-card .label { font-family: var(--font-mono); font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 4px; }
+  .context-card .name { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .context-card .desc { font-size: 13px; color: var(--text-dim); }
+  .context-card.amber { border-left-color: var(--amber); } .context-card.amber .label { color: var(--amber); }
+  .context-card.secondary { border-left-color: var(--secondary); } .context-card.secondary .label { color: var(--secondary); }
+  .context-card.metric { border-left-color: var(--metric); } .context-card.metric .label { color: var(--metric); }
+  .context-card.violet { border-left-color: var(--violet); } .context-card.violet .label { color: var(--violet); }
+  .context-card.rose { border-left-color: var(--rose); } .context-card.rose .label { color: var(--rose); }
+  .context-card.slate { border-left-color: var(--slate); } .context-card.slate .label { color: var(--slate); }
+
+  /* Phase cards (5-column) */
+  .phase-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 24px; }
+  @media (max-width: 750px) { .phase-grid { grid-template-columns: 1fr; } }
+  .phase-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-top: 3px solid var(--secondary); border-radius: 8px;
+    padding: 16px; text-align: center;
+  }
+  .phase-card .num { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: var(--secondary); margin-bottom: 6px; }
+  .phase-card .title { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+  .phase-card .desc { font-size: 12px; color: var(--text-dim); line-height: 1.5; }
+
+  /* Callout */
+  .callout {
+    background: var(--surface); border: 1px solid var(--border);
+    border-left: 3px solid var(--primary); border-radius: 0 12px 12px 0;
+    padding: 20px 24px; font-size: 15px; line-height: 1.6;
+    color: var(--text-dim); margin-top: 32px;
+  }
+  .callout strong { color: var(--text); }
+
+  .footer {
+    margin-top: 56px; padding-top: 20px;
+    border-top: 1px solid var(--border);
+    text-align: center; font-size: 13px; color: var(--text-muted);
+  }
+  .footer a { color: var(--primary); text-decoration: none; }
+
+  @media (max-width: 640px) {
+    body { padding: 0 12px 48px; }
+    .nav { margin: 0 -12px 24px; padding: 0 12px; }
+    .hero h1 { font-size: 28px; }
+    .context-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="nav-inner">
+    <span class="nav-brand">BRAND NAME</span>
+    <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
+      <span class="icon-light">&#9788;</span>
+      <span class="icon-dark" style="display:none">&#9790;</span>
+    </button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="hero">
+    <div class="hero-badge">SECTION LABEL</div>
+    <h1>Page Title</h1>
+    <p class="subtitle">One-line description of what this page explains.</p>
+  </div>
+
+  <div class="mermaid-wrap animate" style="--i:1">
+    <div class="zoom-controls">
+      <button onclick="zoomDiagram(this, 1.2)" title="Zoom in">+</button>
+      <button onclick="zoomDiagram(this, 0.8)" title="Zoom out">&minus;</button>
+      <button onclick="resetZoom(this)" title="Reset">&#8634;</button>
+    </div>
+    <pre class="mermaid">
+      flowchart TD
+        A["Start"] --> B["End"]
+
+        classDef primary fill:rgba(232,98,26,0.08),stroke:#e8621a,stroke-width:2px,color:#0a1628
+        class A,B primary
+    </pre>
+  </div>
+
+  <div class="footer">
+    <a href="../index.html">&larr; Index</a>
+    &nbsp;&middot;&nbsp;
+    <a href="next-page.html">Next Page &rarr;</a>
+    &nbsp;&middot;&nbsp;
+    &copy; 2025-2026 Charlie Fuller
+  </div>
+</div>
+
+<script type="module">
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+  const isDark = document.documentElement.classList.contains('dark');
+  mermaid.initialize({
+    startOnLoad: true, theme: 'base', look: 'classic',
+    themeVariables: {
+      primaryColor: isDark ? '#132240' : '#f5f8fc',
+      primaryBorderColor: isDark ? '#f37021' : '#e8621a',
+      primaryTextColor: isDark ? '#e8edf5' : '#0a1628',
+      secondaryColor: isDark ? '#132240' : '#ffffff',
+      secondaryBorderColor: isDark ? '#6cace4' : '#4a90c4',
+      secondaryTextColor: isDark ? '#e8edf5' : '#0a1628',
+      tertiaryColor: isDark ? '#132240' : '#ffffff',
+      tertiaryBorderColor: isDark ? '#2dd4bf' : '#0f766e',
+      tertiaryTextColor: isDark ? '#e8edf5' : '#0a1628',
+      lineColor: isDark ? '#5e7aa3' : '#7a9ab8',
+      fontSize: '15px', fontFamily: "'Fraunces', Georgia, serif",
+    }
+  });
+</script>
+<script>
+  function updateZoomState(wrap) {
+    const t = wrap.querySelector('.mermaid');
+    wrap.classList.toggle('is-zoomed', parseFloat(t.dataset.zoom || '1') > 1);
+  }
+  function zoomDiagram(btn, factor) {
+    const wrap = btn.closest('.mermaid-wrap'), t = wrap.querySelector('.mermaid');
+    const n = Math.min(Math.max((parseFloat(t.dataset.zoom || '1')) * factor, 0.3), 5);
+    t.dataset.zoom = n; t.style.transform = 'scale(' + n + ')'; updateZoomState(wrap);
+  }
+  function resetZoom(btn) {
+    const wrap = btn.closest('.mermaid-wrap'), t = wrap.querySelector('.mermaid');
+    t.dataset.zoom = '1'; t.style.transform = 'scale(1)'; updateZoomState(wrap);
+  }
+  document.querySelectorAll('.mermaid-wrap').forEach(function(wrap) {
+    wrap.addEventListener('wheel', function(e) {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      const t = wrap.querySelector('.mermaid');
+      const n = Math.min(Math.max((parseFloat(t.dataset.zoom || '1')) * (e.deltaY < 0 ? 1.1 : 0.9), 0.3), 5);
+      t.dataset.zoom = n; t.style.transform = 'scale(' + n + ')'; updateZoomState(wrap);
+    }, { passive: false });
+    let sx, sy, sl, st;
+    wrap.addEventListener('mousedown', function(e) {
+      if (e.target.closest('.zoom-controls')) return;
+      if (parseFloat(wrap.querySelector('.mermaid').dataset.zoom || '1') <= 1) return;
+      wrap.classList.add('is-panning'); sx = e.clientX; sy = e.clientY;
+      sl = wrap.scrollLeft; st = wrap.scrollTop;
+    });
+    window.addEventListener('mousemove', function(e) {
+      if (!wrap.classList.contains('is-panning')) return;
+      wrap.scrollLeft = sl - (e.clientX - sx); wrap.scrollTop = st - (e.clientY - sy);
+    });
+    window.addEventListener('mouseup', function() { wrap.classList.remove('is-panning'); });
+  });
+</script>
+<script>
+  const toggle = document.getElementById('themeToggle');
+  const iconLight = toggle.querySelector('.icon-light');
+  const iconDark = toggle.querySelector('.icon-dark');
+  function setTheme(d) {
+    document.documentElement.classList.toggle('dark', d);
+    iconLight.style.display = d ? 'none' : '';
+    iconDark.style.display = d ? '' : 'none';
+    try { localStorage.setItem('diagram-theme', d ? 'dark' : 'light'); } catch(e) {}
+  }
+  toggle.addEventListener('click', () => setTheme(!document.documentElement.classList.contains('dark')));
+  try { if (localStorage.getItem('diagram-theme') === 'dark') setTheme(true); } catch(e) {}
+</script>
+</body>
+</html>
+```
+
