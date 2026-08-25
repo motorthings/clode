@@ -15,11 +15,16 @@ Descrybe covers U.S. **primary law only** (cases, statutes, regs, constitutions)
 
 ## Procedure
 
+### 0. Establish the input
+The target is a **local file path** (`.md`, `.txt`, `.pdf`, `.docx`). If none was given, ask. Convert opaque formats first: `markitdown <file>` for PDF/DOCX/XLSX. Work from the converted text.
+
 ### 1. Extract every authority from the target document
-- Case citations: `grep -noE "\*[A-Z][A-Za-z.'&, -]+ v\. [A-Z][A-Za-z.'&, -]+\*"` (adjust for the doc's formatting), plus a scan for short-cites and `Id.`/`supra` chains.
-- Statutes / rules: `C.R.S. §`, `U.S.C. §`, `C.R.C.P.`, `CRE`, regs.
-- **Quotations**: `grep -noE '"[^"]{20,}"'` — every quoted string 20+ chars is a candidate for `verify_quote`.
-- Build a working list. De-dupe by authority but keep every location (line numbers) so fixes can be applied everywhere.
+Formatting-agnostic — **do not assume markdown italics** (real filings are often plain text or stripped by conversion):
+- Case captions: match `Case v. Case`, `In re X`, `Ex parte X`, with or without the period after `v`, and `&`/`'`/`,` inside captions. Also catch docket- or party-style fragments for later resolution.
+- Short-cites and `Id.`/`supra` chains: resolve each back to its first full cite.
+- Statutes / rules: `C.R.S. §`, `U.S.C. §`, `C.R.C.P.`, `CRE`, `FRCP`, regs.
+- **Quotations**: every quoted string 20+ chars is a candidate for `verify_quote`.
+- Build a working list with a fixed shape: `Authority | First full cite | Lines | Status`. De-dupe by authority but keep every line number so fixes can be applied everywhere.
 
 ### 2. For each CASE
 1. `find_case_from_reference` (pass the full reference + any quote_hint/year/court). Outcomes:
@@ -31,8 +36,9 @@ Descrybe covers U.S. **primary law only** (cases, statutes, regs, constitutions)
 
 ### 3. For each QUOTE
 - `verify_quote` (needs `case_id` + the quote). Give ≥4 words / 2 substantive terms.
-  - **found** → ✅.
-  - **not_found** → the quote is altered or fabricated. Pull the real passage with `get_case_passages` and either correct the quotation to the actual language or convert it to an accurate paraphrase. **Never leave an unverified verbatim quote in a filing.**
+- **Prepare the quote before verifying:** strip leading/trailing citation text and ellipses, and normalize case/punctuation differences (the engine matches language, not formatting). Pass only the running text.
+- **found** → ✅. If it returns "found with differences," confirm the differences are non-substantive (word order, tense, punctuation) before certifying.
+- **not_found** → the quote is altered or fabricated. Pull the real passage with `get_case_passages` and either correct the quotation to the actual language or convert it to an accurate paraphrase. **Never leave an unverified verbatim quote in a filing.**
 - Statutory quotes → `search_laws_and_rules` and compare the returned current text verbatim.
 - Non-Descrybe quotes (JAMS rules, CJI) → `WebFetch` the official source and quote-match.
 
@@ -41,6 +47,9 @@ Descrybe covers U.S. **primary law only** (cases, statutes, regs, constitutions)
 
 ### 5. Report
 Produce a table: **Authority | Doc cite | Descrybe cite | Exists? | Cite correct? | Treatment | Quote verified? | Action**. Then a prioritized **ACTION ITEMS** list: ❌ fabricated/not-found first, then wrong-cite/garbled-caption, then negative-treatment, then misquotes, then holding-mismatches. For each, give the exact fix (correct caption/cite/quote). Apply fixes to the document only when the user approves (or immediately if they've said to fix as you go), and update any source-of-truth files (e.g., a `CLAUDE.md` case table or a cite-check worklist) in the same pass.
+
+### 6. Close the loop
+After fixes are applied, **re-scan the fixed document** with the same extraction from Step 1. Assert that **0** authorities remain `❌ NOT FOUND`, unverified, or flagged `⚠️` treatment with an unresolved forward-citation. Report what is now clean and what still needs external verification (e.g., real-but-uncovered authorities). Do not call the pass done while any unresolved item remains.
 
 ## Rules
 - **Never certify a cite you couldn't verify.** "Not in Descrybe" ≠ "doesn't exist," but it also ≠ "safe to file" — escalate to a web/primary-source check and label binding vs. persuasive.
