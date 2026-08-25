@@ -1,0 +1,7 @@
+d0d38c8 | 2026-03-14 | Add cipher and transcript-analysis skills, and repo slash command
+0a63c76 | 2026-04-04 | Initial commit + granola enricher
+ec816c6 | 2026-04-04 | Remove neo4j-thesis from global MCP servers
+d2b550a | 2026-04-04 | Fix enricher to watch Summaries/ and exclude archives from mem0
+96eb08c | 2026-04-11 | feat: add glean-docs and glean-docs-refresh skills
+bdcbe47 | 2026-04-23 | feat: token efficiency overhaul -- statusline, caveman, convert, auto-convert hook
+5b3d588 | 2026-07-08 | add prd and diagrams skills
