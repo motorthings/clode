@@ -1,161 +1,64 @@
----
-name: custom-svg-diagram
-description: Build hand-crafted SVG architecture and flow diagrams with guaranteed-clean arrow routing — no arrow overlaps, no arrow-through-box crossings — and bold role-color coding. Use when a Mermaid auto-layout can't control spacing, when the user wants a two-panel or grouped layout, or when "make the arrows connect / don't overlap" matters. Produces self-contained inline SVG that themes with the page's CSS variables.
-metadata:
-  version: "0.1.0"
----
-
 # Custom SVG Diagram
 
-Hand-built SVG for diagrams where Mermaid's auto-layout isn't good enough. The whole point is **deterministic control**: exact spacing, grouped containers, and arrows that provably connect to boxes without overlapping or crossing.
+Build self-contained SVG architecture and flow diagrams with **machine-checked quality**: every arrow connects to a box edge, no arrow crosses a box, no arrow overlaps another, no text sits on a line or a border, the palette stays WCAG-clean, and every diagram passes four legibility self-checks before it's done.
 
-Use this over Mermaid when:
-- The layout is two-panel, grouped, or has a feedback arc Mermaid would mangle.
-- The user cares that arrows land exactly on box edges and don't overlap.
-- You want role-color-coded boxes (filled, not white outlines).
-- The diagram is a deliverable (portfolio, client, interview) where polish matters.
+Invoke with `/custom-svg-diagram`. For the diagram part of a visual-explainer page, delegate here.
 
-Mermaid is still the right tool for quick throwaway diagrams or huge graphs where auto-routing beats hand-coordinates.
+## Legibility method (hard rules)
 
-## The non-negotiable arrow rules
+These are enforced on every diagram, not tuned per file.
 
-These are the rules this skill exists to enforce. Violating any of them is the reason diagrams come back "arrows don't connect" / "arrows are overlapping."
+- **4 semantic categories** — storage / compute / model / consumer. One color per category, never per node. Old role names (`source`, `t1`, `t2`, `loop`, `llm`, `out`) alias onto them.
+- **Group labels** — a short noun phrase (≤3 words, never two ideas joined with "·"); a qualifier goes on a second, smaller, lighter line. Tracking ≤0.08em. The label is a chip anchored top-left, inset inside the border. Every group reserves a top band (label height + 16px) that no node enters. Nested groups differ: outer = solid 1.5px border + filled chip; inner = dashed 1px border + small-caps label, one step smaller and lighter.
+- **Nodes** — sized from measured content (never less than the longest line + padding); text centered on both axes; subtitle wraps at ~24 chars onto a second line; if it needs more than 2 lines the copy is too long. Title ≥16px, subtitle ≥13px, both ≥4.5:1 against the fill. Flat tint only: no gradient, no hatch, no gloss, no text-shadow. Color lives in the border and the title.
+- **Edges** — every arrow is labeled; the label sits at the line midpoint in a pill with a page-background knockout so the line never runs through the text. Orthogonal routing.
+- **Gutters** ≥32px between nodes, ≥24px padding inside groups. Nodes are live SVG text, never rasterized.
 
-1. **Every arrow ends exactly on a box edge.** No floating arrowheads 2–6px short of the target. End the path at the box's border coordinate. `M x1 y1 L xEdge yEdge`, where `(xEdge,yEdge)` is precisely on the target box's border.
-2. **No arrow passes through a box interior.** The arrow's whole path (not just its endpoint) must stay in open space.
-3. **No two arrows overlap.** Parallel arrows at the same coordinate, or crossing paths, are both failures.
-4. **A hub connecting to two boxes must not send an arrow through the other box.** This is the most common trap.
+## Self-check before finishing (mandatory)
 
-## Layout patterns that prevent the traps
+Never finish a diagram without running the gate. After generating, run:
 
-### The stacked-box trap (the big one)
-If two boxes are stacked vertically in the same column, and each feeds a consumer below, the upper box's arrow runs straight down **through the lower box**. Fix by routing the upper consumer's arrow **down an outer margin** (a corner path), not down the shared column.
+    node check.mjs path/to/diagram.html /path/to/chrome-headless-shell
 
-```
-upperBox ─┐
-          │  ← route down the LEFT margin: M bottomLeft L marginX downY L marginX consumerY
-lowerBox ─┴──← lower box's consumer goes straight down (it's the bottom one, so it's clear)
-```
+This runs `verify.mjs` — the geometry gate plus the four legibility self-checks — and the palette audit. It exits non-zero on any failure. Fix what it flags and re-run until it passes.
 
-### The hub fan-out trap
-A hub box (e.g. the event log) feeding two derived boxes. If the derived boxes are side-by-side and the hub is to one side, the arrow to the far box crosses the near box. Two clean fixes:
+Before reporting a diagram as done, **report the four legibility check results**:
+1. No text bbox exceeds its container's content box.
+2. No label overlaps a border stroke or another label.
+3. Every group label fits within the group width at rendered tracking.
+4. All type meets the minimum sizes (title ≥16px, sub ≥13px) at final render scale.
 
-- **Stack the two derived boxes** on one side, hub on the other. The hub's two arrows fan out vertically through the empty gap. (Then fix the consumers with the margin trick above.)
-- **Or** put the hub between them and keep its connections to the two adjacent edges (short, no cross) — but then consumers/loop connections must be routed around.
+## Why not just Mermaid?
 
-Whichever you pick, the derived boxes end up stacked, so apply the stacked-box fix for their consumers.
-
-### Keep the hub near the consumer it talks to most
-If a box has a hot connection (e.g. the loop↔event-log read/write), put that box at the boundary nearest the other panel so those arrows are short and horizontal. A tall "log" box hugging the panel edge reads naturally.
-
-## Arrow routing summary
-- Fan-out arrows go through **empty space** — never through another box.
-- Two arrows between the same two things (a read and a write) go at **different y-heights** and opposite directions, so they never overlap.
-- Consumer arrows that would cross a stacked box go down **the outer margins**.
-- End every arrow at the box border coordinate; the marker tip lands on it.
-
-## Bold color-coding
-
-Fill each box with its role color's dim variant, not white:
-
-```html
-<rect ... class="sv-box-source" stroke-width="2"></rect>
-```
-
-with (in the page's `<style>`):
-
-```css
-.sv-box-source{fill:var(--slate-dim);stroke:var(--slate)}
-.sv-box-t1{fill:var(--secondary-dim);stroke:var(--secondary)}
-.sv-box-t2{fill:var(--primary-dim);stroke:var(--primary)}
-.sv-box-loop{fill:var(--violet-dim);stroke:var(--violet)}
-.sv-box-llm{fill:var(--amber-dim);stroke:var(--amber)}
-.sv-box-out{fill:var(--good-dim);stroke:var(--good)}
-```
-
-Color the box title text to match its role. Use `--*-dim` fills + solid-color borders + `stroke-width:2` so the coding survives both light and dark themes. Fill/stroke referencing CSS variables themes automatically.
-
-## Professional polish (shading, curves, emphasis, color)
-
-`layout.mjs` ships a premium look out of the box, all themeable via CSS variables:
-
-- **3D button shadow** — a three-layer shadow in one filter: a tight contact shadow, a **crisp hard offset** (`dy:3.5, blur:0`) that reads as the raised button's underside/thickness, and a soft ambient one. This is the subtle "3D button" cue. The rounded face + top sheen complete it.
-- **Face gradient** — each box face is a per-role vertical gradient (lighter top → deeper bottom) via `url(#g<role>)`, so it reads with rounded volume. Stops live in `GRADIENT` in `layout.mjs`; theme-aware because they reference the CSS color vars.
-
-## Box & arrow looks
-
-Boxes and arrows each have a swappable "look", orthogonal to color. Pick them per diagram:
-
-```js
-const laid = layout({ nodes, edges, boxStyle: 'soft', arrowStyle: 'bold' });
-```
-
-**`boxStyle`** (`STYLES` in `layout.mjs`, default `button`):
-- `button` — 3D button: rounded, hard underside shadow, face gradient, gloss.
-- `flat` — minimal: flat dim fill, thin border, no shadow. For dense/print.
-- `outline` — technical: transparent fill, strong border.
-- `soft` — rounded card: soft shadow, gradient, gloss, more rounded.
-- `glow` — a per-role colored outer glow. For dark dashboards.
-
-**`arrowStyle`** (`ARROW_STYLES`, default `standard`): `standard` (2), `bold` (2.75), `hairline` (1.25) — thickness presets.
-
-**Arrow color** is CSS-var driven like box color: standard arrows use `--arr-color` (default `var(--text-muted)`), emphasis arrows use `--arr-color-strong` (default `var(--secondary)`). Override them in the page CSS to recolor arrows without touching the diagram. The `emphasis: true` per-edge flag still promotes an edge to the strong highlight.
-- **Top sheen** — a white-to-transparent vertical gradient over the top of every box, plus a faint 1px light line along the top edge. Reads as glass gloss in both light and dark.
-- **Curved edges** — `layout()` routes every edge with `smoothPath()`, rounding each 90° corner with a quadratic bezier. The curve stays inside the orthogonal corridor, so it reads premium without adding overlap risk (verified at the same pass rate as orthogonal). Pass `curved: false` for the sharp/orthogonal look.
-- **Emphasis hierarchy** — mark an edge `emphasis: true` and it renders as `.sv-arrow--strong` (thicker, colored cyan, matching arrowhead) against the muted default. Use it to light up the primary flow and let secondary paths recede.
-- **Rounded line joins** — add `stroke-linejoin:round; stroke-linecap:round` to the arrow classes so corners smooth out.
-
-**Color coherence** is enforced by `color-audit.mjs`, which computes WCAG contrast (title vs box background, sub-text vs box background, body vs surface) for every role in both themes and exits non-zero on any failure. It also reports a colorblind-safety pass (deuteranopia simulation, advisory): the mitigation for roles that blur together is **redundant encoding** — pass `patterns: true` to `layout()` to overlay a subtle per-role pattern so color is never the only signal.
-
-## Color sets (palettes)
-
-The SVG references CSS variables (`--slate`, `--surface`, …), so **swapping color sets is a CSS swap, not a diagram change**. `palette.mjs` holds named palettes and emits their CSS:
-
-```js
-import { cssFor, palettes } from './palette.mjs';
-const css = cssFor('blueprint');   // :root { … } html.dark { … }
-```
-
-Shipped palettes: **`blueprint`** (default technical), **`warm`** (editorial), **`mono`** (grayscale, color-blind-safe — roles differ by shade, patterns carry the rest). Add your own as an entry in `palettes` (light + dark, each with `surface/bg/text/textDim/dim` and the six role colors), then `color-audit.mjs <name>` to validate it before shipping.
-
-Validate a palette by name: `node color-audit.mjs warm`. Note `check.mjs` audits the default blueprint palette; run `color-audit.mjs <name>` to gate a non-default palette.
-
-## Readability rules (from the research)
-
-Beyond geometry, a diagram is readable when it's **tree-like and flow-oriented**, not a dependency graph. `lint.mjs` enforces these thresholds on a graph spec:
-
-| Rule | Limit | Why |
-|---|---|---|
-| Edge count | ~N-1 to N+2 for N nodes | More = dependency graph, not data flow |
-| Edge labels | ≤ 4 words | Long labels force layers apart / reroute |
-| Hub fan-out | ≤ 5 children per node | 6+ = split or group downstream |
-| Merge depth | ≤ 4 sources into one node | 4+ = a diamond to avoid |
-| Groups | ≤ 3 per diagram | More collapses the hierarchy |
-| Layer size | 1–4 nodes per layer | 6+ makes it vertically sprawling |
-
-Also from the research: model the **data-flow story** (not the implementation graph), keep one symbol per category, label lines (dashed = async/reverse/passive, solid = sync), and prefer rounded orthogonal connectors for off-axis paths. See the README for sources.
-
-## The geometric verification (do this every time)
-
-Never trust your eyes — prove it. After writing the SVG, run the verifier (below) that asserts all three rules, and fix anything it flags. Empirically, this matters: a benchmark comparing the margin-routing method against the naive stacked-consumer method across 40 random layouts scored **100% vs 0%** — the naive approach fails on every instance because the consumer arrow crosses the stacked box. The method in this skill is the one that provably passes.
-
-See `benchmark.mjs` to re-run that test yourself.
+Mermaid auto-layouts but you don't control spacing, and you can't guarantee arrows land on edges or avoid overlaps. This skill gives you **deterministic control plus proof**: the geometry and legibility are verified in a real browser, not eyeballed.
 
 ## Tooling (in this skill's dir)
 
-The skill ships three scripts. They need `playwright` installed in your cwd and a Chromium binary (the path is the same one `visual-explainer` uses — see its SKILL.md).
+Needs `playwright` in your cwd and a Chromium binary (see `visual-explainer`'s SKILL.md for the path).
 
-- **`layout.mjs`** — build diagrams from data, not hand-coordinated paths. `box()`, `arrow()`, `group()`, `header()`, `assemble()` emit the role-colored SVG matching the skill's CSS classes. This is the reliable core: describe boxes + arrows, get verifiable SVG.
-  - **`layout()` (auto-layout, real crossing removal)** — takes `{nodes, edges}` and runs them through **@dagrejs/dagre**: it layers the graph, minimizes edge crossings, and routes the edges. Handles multi-parent merges and multi-child fans. Arrow endpoints are clipped to the box borders, and each label is placed above the edge's longest horizontal run so text never sits on the line. `npm install @dagrejs/dagre` in the skill dir (done). It minimizes crossings but doesn't eliminate them on adversarial dense graphs — measured ~80% clean on random DAGs with 2-parent merges, and clean on realistic/sparse diagrams. **Always run `verify.mjs` after `layout()`** and fall back to the manual primitives if a specific diagram needs exact control.
-- **`verify.mjs`** — the geometric proof. Usage: `node verify.mjs <path-or-url> [executablePath]`. Asserts every arrow connects to a box edge, none cross a box interior, none overlap **in open space** (arrows converging on a shared box edge are allowed, since that's normal), and no `.sv-arrow-lbl` text sits on an arrow line. Exits non-zero on any failure.
-- **`examples/demo.html`** — a dagre auto-layout showcase (fans + merges) that passes verify cleanly. Regenerate with `layout-test.mjs`.
-- **`benchmark.mjs`** — the empirical method test. Usage: `node benchmark.mjs <nConfigs> [executablePath]`. Renders N random layouts under two routing strategies and reports pass rates, so "which method is best" is answered by data, not taste.
-- **`layout-test.mjs`** — validates the auto-layout against random layered forests and emits an example diagram. Usage: `node layout-test.mjs <nConfigs> <executablePath> [demoOut.html]`.
-- **`color-audit.mjs`** — the palette gate. Usage: `node color-audit.mjs [palette.json]`. Computes WCAG contrast for every role in both themes (hard gate) + a colorblind-safety pass (advisory).
-- **`lint.mjs`** — the readability gate for a graph spec. Usage: `node lint.mjs <graph.json>`. Flags dense edge counts, long labels, hub fan-out, merge depth, group count, layer balance. Run on the spec before rendering.
-- **`check.mjs`** — the one-command gate for a finished diagram. Usage: `node check.mjs <diagram.html> [executablePath]`. Runs geometry + labels (`verify.mjs`) and palette (`color-audit.mjs`) in one shot; exits non-zero if either fails.
+- **`layout.mjs`** — primitives (`box`, `arrow`, `group`, `header`, `assemble`) + `layout()` auto-layout (dagre crossing removal, curved or orthogonal, label avoidance). Boxes auto-size from content and render flat with a category color.
+- **`palette.mjs`** — named palettes (`blueprint`, `warm`, `mono`), each with the 4 category colors in light + dark, and `cssFor(name)` to emit the CSS variables. Swap palettes by swapping CSS, not diagram code.
+- **`verify.mjs`** — the proof: arrows connect on edges, no through-box, no overlap in open space, no text on a line, **plus the four legibility self-checks**. Exits non-zero on any failure.
+- **`check.mjs`** — the one-command mandatory gate: `verify.mjs` (geometry + four self-checks) and `color-audit.mjs`. `node check.mjs <diagram.html> [executablePath]`.
+- **`color-audit.mjs`** — WCAG contrast for every category in both themes (hard gate) + colorblind-safety pass (advisory). `node color-audit.mjs [name|palette.json]`.
+- **`lint.mjs`** — readability gate for a graph spec: every arrow labeled, group titles ≤3 words / no "·", dense edges, hub fan-out, merge depth, groups, layers.
+- **`benchmark.mjs`** — empirically tests routing methods (margin-routing beats naive straight-down 100% vs 0%).
+- **`layout-test.mjs`** — measures the auto-layout pass rate on random DAGs; regenerates `examples/demo.html`.
+- **`examples/demo.html`** — the showcase, all checks green.
 
-**Reuse, don't reinvent.** For effects beyond the base diagram, pull from `~/.claude/skills/visual-explainer/references/css-patterns.md`: the SVG curved-connector overlay, the `drawIn` connector animation, and the `prefers-reduced-motion` guard. `layout.mjs` emits the structural SVG; css-patterns.md supplies the polish.
+## Color sets & category colors
+
+`palette.mjs` ships `blueprint`, `warm`, `mono`. Each defines four category colors (`--storage`, `--compute`, `--model`, `--consumer`) plus surface/text in light + dark. Add your own entry, then gate it with `node color-audit.mjs <name>`.
+
+```js
+import { cssFor } from './palette.mjs';
+const css = cssFor('warm');   // → :root { … } html.dark { … }
+```
+
+## Readability rules (from the research)
+
+Beyond geometry, a diagram is readable when tree-like and flow-oriented. `lint.mjs` enforces: edge count ~N-1..N+2, ≤4-word labels, hub fan-out ≤5, merge depth ≤4, ≤3 groups, balanced layers, and (legibility) every arrow labeled with group titles ≤3 words.
 
 ## Reference
-- Live example: `~/Documents/Vault/GitHub/diagrams/csm/csm-storage-scale.html` — a two-panel storage + loop diagram exercising all the above rules (stacked tables, margin-routed consumers, hub fan-out, read/write at different heights).
+- Live conforming example: `~/Documents/Vault/GitHub/diagrams/csm/csm-storage-scale.html` (four self-checks green).
+- Sources: professional diagramming practice — [SAP Architecture Center](https://architecture.learning.sap.com/docs/community/diagrams), [Azure Well-Architected diagrams](https://learn.microsoft.com/en-us/azure/well-architected/architect-role/design-diagrams), [NCSC — good architecture diagrams](https://www.ncsc.gov.uk/blog-post/drawing-good-architecture-diagrams), [HowToGeek — 4 rules for system diagrams](https://www.howtogeek.com/stop-confusing-everyone/); crossing minimization via dagre's Sugiyama-style layering; WCAG color/contrast.
