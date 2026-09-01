@@ -27,7 +27,7 @@ export const canonical = role => ROLE_MAP[role] || 'storage';
 // Flat box styles only — no gradient, no hatch, no gloss. Color lives in the
 // border and the label. `fill` is the flat tint opacity over the surface.
 export const STYLES = {
-  clean:  { rx: 8,  fill: 0.06, border: 1.5 },
+  clean:  { rx: 8,  fill: 0.13, border: 1.5 },
   soft:   { rx: 10, fill: 0.03, border: 1 },
   outline:{ rx: 6,  fill: 0,    border: 1.5 },
 };
