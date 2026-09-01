@@ -133,6 +133,25 @@ const demo = {
 };
 const STRUCT_CSS = `
 body{background:var(--bg);color:var(--text);font-family:var(--font-mono);margin:0;padding:32px}
+.wrap{background:var(--surface);border:1px solid var(--border-bright);border-radius:16px;padding:20px;max-width:1300px;margin:0 auto}
+.wrap svg{display:block;width:100%;height:auto}
+h1{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:0 0 6px}
+.note{font-size:11px;color:var(--text-dim);margin:10px 0 0;line-height:1.5}
+.sv-sec{font-size:11px;font-weight:700;letter-spacing:.08em;fill:var(--text-muted);text-transform:uppercase}
+.sv-grp{font-size:13px;font-weight:600;letter-spacing:.08em;fill:var(--text);text-transform:uppercase}
+.sv-grp--inner{font-size:11px;font-weight:500;letter-spacing:.04em;fill:var(--text-dim);font-variant:small-caps;text-transform:none}
+.sv-grp--sub{font-size:11px;font-weight:400;letter-spacing:.04em;fill:var(--text-muted);text-transform:none}
+.sv-title{font-size:16px;font-weight:700;fill:var(--text);letter-spacing:.01em}
+.sv-sub{font-size:13px;font-weight:400;fill:var(--text-dim);letter-spacing:.01em}
+.sv-arrow{fill:none;stroke:var(--arr-color);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.sv-arrow-d{fill:none;stroke:var(--arr-color);stroke-width:2;stroke-dasharray:4 4;stroke-linejoin:round;stroke-linecap:round}
+.sv-arrow--strong{fill:none;stroke:var(--arr-color-strong);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.sv-arrow-lbl{font-size:12px;fill:var(--text);letter-spacing:.01em}
+.sv-pill{fill:var(--surface)}
+.sv-box-storage{stroke:var(--storage)} .sv-box-compute{stroke:var(--compute)}
+.sv-box-model{stroke:var(--model)} .sv-box-consumer{stroke:var(--consumer)}
+`
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);margin:0;padding:32px}
 .wrap{background:var(--surface);border:1px solid var(--border-bright);border-radius:16px;padding:20px;max-width:1200px;margin:0 auto}
 .wrap svg{display:block;width:100%;height:auto}
 h1{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:0 0 6px}

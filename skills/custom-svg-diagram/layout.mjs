@@ -16,144 +16,113 @@
 // `assemble` returns the full <svg> string; `assembleBody` returns just the
 // inner content (for embedding inside a hand-authored <svg> tag).
 
-export const ROLE_CLASS = {
-  source: 'sv-box-source', t1: 'sv-box-t1', t2: 'sv-box-t2',
-  loop: 'sv-box-loop', llm: 'sv-box-llm', out: 'sv-box-out',
-};
-export const ROLE_COLOR = {
-  source: 'var(--slate)', t1: 'var(--secondary)', t2: 'var(--primary)',
-  loop: 'var(--violet)', llm: 'var(--amber)', out: 'var(--good)',
-};
-// Face-gradient stops per role (theme-aware via the CSS color var).
-export const GRADIENT = {
-  source: { color: 'slate', top: 0.08, bottom: 0.20 },
-  t1: { color: 'secondary', top: 0.08, bottom: 0.20 },
-  t2: { color: 'primary', top: 0.08, bottom: 0.20 },
-  loop: { color: 'violet', top: 0.08, bottom: 0.20 },
-  llm: { color: 'amber', top: 0.10, bottom: 0.24 },
-  out: { color: 'good', top: 0.10, bottom: 0.24 },
-};
-export const ROLE_VAR = { source: 'slate', t1: 'secondary', t2: 'primary', loop: 'violet', llm: 'amber', out: 'good' };
+export const ROLES = ['storage', 'compute', 'model', 'consumer'];
+const ROLE_MAP = { storage: 'storage', compute: 'compute', model: 'model', consumer: 'consumer',
+  source: 'storage', t1: 'storage', t2: 'storage', loop: 'compute', llm: 'model', out: 'consumer' };
+export const ROLE_CLASS = { storage: 'sv-box-storage', compute: 'sv-box-compute', model: 'sv-box-model', consumer: 'sv-box-consumer' };
+export const ROLE_COLOR = { storage: 'var(--storage)', compute: 'var(--compute)', model: 'var(--model)', consumer: 'var(--consumer)' };
+export const ROLE_VAR = { storage: 'storage', compute: 'compute', model: 'model', consumer: 'consumer' };
+export const canonical = role => ROLE_MAP[role] || 'storage';
 
-// Box "looks" — the shape/fill/shadow of a box, independent of its color role.
-//   shadow:  'shadow' (3D button) | 'shadowSoft' | 'glow' (per-role) | 'none'
-//   fill:    'gradient' | 'flat' (dim) | 'outline'
-//   gloss:   adds the top sheen + edge line
+// Flat box styles only — no gradient, no hatch, no gloss. Color lives in the
+// border and the label. `fill` is the flat tint opacity over the surface.
 export const STYLES = {
-  button:  { rx: 14, shadow: 'shadow',     fill: 'gradient', gloss: true,  border: 2 },
-  flat:    { rx: 10, shadow: 'none',       fill: 'flat',     gloss: false, border: 1.5 },
-  outline: { rx: 8,  shadow: 'none',       fill: 'outline',  gloss: false, border: 2.5 },
-  soft:    { rx: 18, shadow: 'shadowSoft', fill: 'gradient', gloss: true,  border: 1.5 },
-  glow:    { rx: 12, shadow: 'glow',       fill: 'flat',     gloss: false, border: 2 },
+  clean:  { rx: 8,  fill: 0.06, border: 1.5 },
+  soft:   { rx: 10, fill: 0.03, border: 1 },
+  outline:{ rx: 6,  fill: 0,    border: 1.5 },
 };
-export const DEFAULT_STYLE = 'button';
+export const DEFAULT_STYLE = 'clean';
 
-// Arrow "looks" — thickness presets. Color is set by the CSS vars --arr-color
-// (standard) and --arr-color-strong (emphasis), so arrow color is a CSS swap
-// like box color, not a diagram-code change.
 export const ARROW_STYLES = {
   standard: { width: 2 },
-  bold:     { width: 2.75 },
+  bold:     { width: 2.5 },
   hairline: { width: 1.25 },
 };
 export const DEFAULT_ARROW_STYLE = 'standard';
 
+const estWidth = (s, px) => s.length * px * 0.62;
+const wrap = (s, max) => { if (!s) return []; const words = s.split(' '); const lines = []; let cur = '';
+  for (const wd of words) { const nxt = (cur + ' ' + wd).trim(); if (nxt.length > max) { if (cur) lines.push(cur.trim()); cur = wd; } else cur = nxt; }
+  if (cur) lines.push(cur.trim()); return lines; };
+
+
 export function defs() {
   return [
     '<defs>',
-    // Arrow markers — fill via CSS vars so arrow color is a CSS swap, matching
-    // the line stroke (--arr-color for standard, --arr-color-strong for emphasis).
-    '  <marker id="arr" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">',
-    '    <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--arr-color)"></path>',
-    '  </marker>',
-    '  <marker id="arrStrong" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">',
-    '    <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--arr-color-strong)"></path>',
-    '  </marker>',
-    // Top sheen — a light highlight that reads as a glass gloss in both themes.
-    '  <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">',
-    '    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32"></stop>',
-    '    <stop offset="52%" stop-color="#ffffff" stop-opacity="0.06"></stop>',
-    '    <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>',
-    '  </linearGradient>',
-    // 3D button shadow: contact + hard underside + soft ambient.
-    '  <filter id="shadow" x="-30%" y="-40%" width="160%" height="200%">',
-    '    <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#16213a" flood-opacity="0.10"></feDropShadow>',
-    '    <feDropShadow dx="0" dy="3.5" stdDeviation="0" flood-color="#16213a" flood-opacity="0.22"></feDropShadow>',
-    '    <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#16213a" flood-opacity="0.14"></feDropShadow>',
-    '  </filter>',
-    // Soft shadow (contact + ambient, no hard underside) for the 'soft' look.
-    '  <filter id="shadowSoft" x="-30%" y="-30%" width="160%" height="180%">',
-    '    <feDropShadow dx="0" dy="1" stdDeviation="1.4" flood-color="#16213a" flood-opacity="0.10"></feDropShadow>',
-    '    <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#16213a" flood-opacity="0.14"></feDropShadow>',
-    '  </filter>',
-    // Per-role glow filters (a subtle colored outer aura) for the 'glow' look.
-    ...Object.entries(ROLE_VAR).map(([role, v]) => (
-      `  <filter id="glow${v}" x="-60%" y="-60%" width="220%" height="220%"><feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="var(--${v})" flood-opacity="0.22"></feDropShadow></filter>`
-    )),
-    // Subtle role patterns — redundant encoding so color is never the only signal.
-    '  <pattern id="pat0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--text)" stroke-opacity="0.05" stroke-width="2"></line></pattern>',
-    '  <pattern id="pat1" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="0" y1="0" x2="0" y2="8" stroke="var(--text)" stroke-opacity="0.05" stroke-width="2"></line></pattern>',
-    '  <pattern id="pat2" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1" fill="var(--text)" fill-opacity="0.06"></circle></pattern>',
-    '  <pattern id="pat3" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8 L8 0 M-4 4 L4 -4 M4 12 L12 4" stroke="var(--text)" stroke-opacity="0.05" stroke-width="1.5"></path></pattern>',
-    // Per-role face gradients: a subtle lighter-top → deeper-bottom so the box
-    // reads with rounded volume (like a button face), theme-aware via CSS vars.
-    ...Object.entries(GRADIENT).map(([name, grad]) => (
-      `  <linearGradient id="g${name}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--${grad.color})" stop-opacity="${grad.top}"></stop><stop offset="100%" stop-color="var(--${grad.color})" stop-opacity="${grad.bottom}"></stop></linearGradient>`
-    )),
+    // Flat design needs only the arrow markers. Fill via CSS vars so arrow
+    // color is a CSS swap matching the line stroke.
+    '  <marker id="arr" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--arr-color)"></path></marker>',
+    '  <marker id="arrStrong" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--arr-color-strong)"></path></marker>',
     '</defs>',
   ].join('\n');
 }
 
-// A role-colored box with title + subtitle. `title` may be an array (two lines).
-export function box({ x, y, w, h, role = 'source', title, sub, pattern, style = DEFAULT_STYLE }) {
-  const cls = ROLE_CLASS[role] || ROLE_CLASS.source;
-  const col = ROLE_COLOR[role] || ROLE_COLOR.source;
-  const rv = ROLE_VAR[role] || 'slate';
+// A category-colored box, auto-sized from measured content, text centered.
+// Flat tint only (no gradient, no hatch, no gloss). Color lives in the border
+// and the title. `title` may be an array; `sub` wraps at ~24 chars (2 lines max).
+export function box({ x, y, w, h, role, title, sub, style = DEFAULT_STYLE, minW = 150 }) {
+  const rv = ROLE_VAR[canonical(role)];
+  const cls = ROLE_CLASS[canonical(role)];
+  const col = ROLE_COLOR[canonical(role)];
   const S = STYLES[style] || STYLES[DEFAULT_STYLE];
-  const titles = Array.isArray(title) ? title : [title];
-  const shadowId = S.shadow === 'glow' ? `glow${rv[0].toUpperCase()}${rv.slice(1)}` : S.shadow;
-  const open = shadowId ? `<g filter="url(#${shadowId})">` : '<g>';
-  const g = [open];
-  let fill = `style="fill:url(#g${role})"`;
-  if (S.fill === 'flat') fill = `style="fill:var(--${rv}-dim)"`;
-  else if (S.fill === 'outline') fill = `style="fill:var(--surface)"`;
-  g.push(`  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${S.rx}" class="${cls}" ${fill} stroke-width="${S.border}"></rect>`);
-  // Redundant encoding: a subtle per-role pattern so color is never the only signal.
-  if (pattern) g.push(`  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${S.rx}" fill="url(#${pattern})"></rect>`);
-  // Glass gloss on the top half + a faint light line along the top edge (button/soft).
-  if (S.gloss) {
-    g.push(`  <rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${S.rx}" fill="url(#sheen)"></rect>`);
-    g.push(`  <line x1="${x + 4}" y1="${y + 1.5}" x2="${x + w - 4}" y2="${y + 1.5}" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>`);
-  }
-  titles.forEach((t, i) => {
-    g.push(`  <text class="sv-title" x="${x + 22}" y="${y + 42 + i * 18}" style="fill:${col}">${t}</text>`);
-  });
-  if (sub) g.push(`  <text class="sv-sub" x="${x + 22}" y="${y + 42 + titles.length * 18 - 2}">${sub}</text>`);
-  g.push('</g>');
+  const TITLE_PX = 16, SUB_PX = 13, PAD = 16;
+  const titles = (Array.isArray(title) ? title : [title]).slice(0, 2);
+  const subs = wrap(sub, 24).slice(0, 2);
+  const titleW = Math.max(...titles.map(t => estWidth(t, TITLE_PX)));
+  const subW = Math.max(...subs.map(s => estWidth(s, SUB_PX)));
+  const bw = w || Math.max(minW, titleW, subW) + PAD * 2;
+  const textH = titles.length * (TITLE_PX + 6) + subs.length * (SUB_PX + 4);
+  const bh = h || PAD * 2 + textH;
+  const cx = x + bw / 2;
+  let ty = y + (bh - textH) / 2 + TITLE_PX / 2;
+  const g = [
+    `<rect x="${x}" y="${y}" width="${bw}" height="${bh}" rx="${S.rx}" class="${cls}" style="fill:${col};fill-opacity:${S.fill}" stroke-width="${S.border}"></rect>`,
+  ];
+  titles.forEach(t => { g.push(`<text class="sv-title" x="${cx}" y="${ty}" text-anchor="middle" style="fill:${col}">${t}</text>`); ty += TITLE_PX + 6; });
+  subs.forEach(s => { g.push(`<text class="sv-sub" x="${cx}" y="${ty}" text-anchor="middle">${s}</text>`); ty += SUB_PX + 4; });
   return g.join('\n');
 }
 
-// An arrow (line path with marker) and optional label. dashed = dotted line;
-// emphasis = the primary-flow highlight (uses --arr-color-strong); arrowStyle =
-// a thickness preset. Color is set by the CSS vars --arr-color / --arr-color-strong.
+// An arrow with an optional label. The label renders in a pill filled with the
+// page background so the line never runs through the text.
 export function arrow({ d, label, labelX, labelY, dashed = false, emphasis = false, arrowStyle = DEFAULT_ARROW_STYLE }) {
   const AS = ARROW_STYLES[arrowStyle] || ARROW_STYLES[DEFAULT_ARROW_STYLE];
   const cls = dashed ? 'sv-arrow-d' : (emphasis ? 'sv-arrow--strong' : 'sv-arrow');
   const mark = emphasis && !dashed ? 'url(#arrStrong)' : 'url(#arr)';
-  const g = [`<path class="${cls}" d="${d}" marker-end="${mark}" stroke-width="${AS.width}"></path>`];
-  if (label != null) g.push(`<text class="sv-arrow-lbl" x="${labelX}" y="${labelY}">${label}</text>`);
-  return g.join('\n');
+  const out = [`<path class="${cls}" d="${d}" marker-end="${mark}" stroke-width="${AS.width}"></path>`];
+  if (label != null) {
+    const w = estWidth(label, 12) + 20, h = 18;
+    const px = labelX - w / 2, py = labelY - h + 4;
+    out.push(`<rect class="sv-pill" x="${px}" y="${py}" width="${w}" height="${h}" rx="9"></rect>`);
+    out.push(`<text class="sv-arrow-lbl" x="${labelX}" y="${labelY}" text-anchor="middle">${label}</text>`);
+  }
+  return out.join('\n');
 }
 
-// A dashed group container with a mono label.
-export function group({ x, y, w, h, label }) {
-  return [
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" style="fill:var(--surface2);stroke:var(--border-bright);stroke-dasharray:6 6"></rect>`,
-    `<text class="sv-grp" x="${x + 18}" y="${y + 24}">${label}</text>`,
-  ].join('\n');
+// A group container. Outer = solid border + filled label chip; inner = dashed
+// 1px border + plain small-caps label, one step smaller/lighter. `title` is a
+// short noun phrase (<=3 words); `sub` is an optional qualifier on a second line.
+// Top padding band inside every group = label height + 16px — no node may sit
+// above group.y + 36.
+export function group({ x, y, w, h, title, sub, level = 'outer' }) {
+  const inner = level === 'inner';
+  const borderStyle = inner
+    ? 'fill:var(--surface2);stroke:var(--border-bright);stroke-dasharray:5 5'
+    : 'fill:var(--surface2);stroke:var(--text-muted)';
+  const border = inner ? 1 : 1.5;
+  const chipY = y + 10;
+  const out = [`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="12" style="${borderStyle}" stroke-width="${border}"></rect>`];
+  if (inner) {
+    out.push(`<text class="sv-grp sv-grp--inner" x="${x + 16}" y="${chipY + 16}">${title}</text>`);
+  } else {
+    const chipW = estWidth(title, 13) + 24;
+    out.push(`<rect x="${x + 12}" y="${chipY}" width="${chipW}" height="26" rx="7" style="fill:var(--surface)"></rect>`);
+    out.push(`<text class="sv-grp" x="${x + 12 + chipW / 2}" y="${chipY + 17}" text-anchor="middle">${title}</text>`);
+    if (sub) out.push(`<text class="sv-grp sv-grp--sub" x="${x + 24 + chipW}" y="${chipY + 17}">${sub}</text>`);
+  }
+  return out.join('\n');
 }
 
-// A column title.
 export function header({ x, y = 34, text }) {
   return `<text class="sv-sec" x="${x}" y="${y}">${text}</text>`;
 }
@@ -260,7 +229,7 @@ const smoothPath = (pts, r = 12) => {
 };
 
 export function layout(spec) {
-  const { nodes, edges, nodeW = 150, nodeH = 92, curved = true, patterns = false, boxStyle = DEFAULT_STYLE, arrowStyle = DEFAULT_ARROW_STYLE, options = {} } = spec;
+  const { nodes, edges, nodeW = 150, nodeH = 92, curved = true, boxStyle = DEFAULT_STYLE, arrowStyle = DEFAULT_ARROW_STYLE, options = {} } = spec;
   const g = new dagre.graphlib.Graph();
   g.setGraph({
     rankdir: 'LR', nodesep: 56, ranksep: 120,
@@ -272,12 +241,11 @@ export function layout(spec) {
   dagre.layout(g);
 
   const rects = {};
-  const rolePattern = { source: 'pat0', t1: 'pat1', t2: 'pat2', loop: 'pat3', llm: 'pat0', out: 'pat1' };
   const boxes = Object.keys(nodes).map(id => {
     const p = g.node(id);
     const role = nodes[id].role || 'loop';
     rects[id] = { x: p.x - nodeW / 2, y: p.y - nodeH / 2, w: nodeW, h: nodeH };
-    return { x: rects[id].x, y: rects[id].y, w: nodeW, h: nodeH, role, title: nodes[id].title, sub: nodes[id].sub, pattern: patterns ? rolePattern[role] : undefined, style: boxStyle };
+    return { x: rects[id].x, y: rects[id].y, w: nodeW, h: nodeH, role, title: nodes[id].title, sub: nodes[id].sub, style: boxStyle };
   });
 
   const arrows = edges.map(e => {

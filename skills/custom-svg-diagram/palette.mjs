@@ -18,30 +18,28 @@ const rgb = c => `rgb(${c[0]}, ${c[1]}, ${c[2]})`;
 const rgba = (h, o) => { const c = hex2rgb(h); return `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${o})`; };
 
 export const palettes = {
-  // Default technical palette (cool: indigo / cyan / violet / teal / amber).
+  // Default technical palette — 4 semantic categories: storage / compute / model / consumer.
   blueprint: {
     light: { surface: '#ffffff', bg: '#f4f6fb', text: '#16213a', textDim: '#4a5b7c', dim: 0.09,
-      roles: { slate: '#475569', secondary: '#0891b2', primary: '#3b4fd8', violet: '#6d28d9', amber: '#b45309', good: '#0f766e' } },
+      roles: { storage: '#3b4fd8', compute: '#0891b2', model: '#6d28d9', consumer: '#0f766e' } },
     dark: { surface: '#111b30', bg: '#0b1220', text: '#e6ecf7', textDim: '#93a5c8', dim: 0.13,
-      roles: { slate: '#94a3b8', secondary: '#22d3ee', primary: '#7d8dff', violet: '#a78bfa', amber: '#fbbf24', good: '#5eead4' } },
+      roles: { storage: '#7d8dff', compute: '#22d3ee', model: '#a78bfa', consumer: '#5eead4' } },
   },
 
-  // Warm editorial palette (earthy browns + greens).
+  // Warm editorial palette.
   warm: {
     light: { surface: '#fffdf9', bg: '#faf5ed', text: '#2b2116', textDim: '#6f6150', dim: 0.11,
-      roles: { slate: '#7a6a58', secondary: '#2f7d5f', primary: '#c05a2b', violet: '#7a5ca8', amber: '#9a6e14', good: '#3d7d52' } },
+      roles: { storage: '#7a6a58', compute: '#2f7d5f', model: '#7a5ca8', consumer: '#3d7d52' } },
     dark: { surface: '#261e14', bg: '#1a140d', text: '#f2e9dc', textDim: '#b6a791', dim: 0.16,
-      roles: { slate: '#b39c82', secondary: '#72c9a4', primary: '#e08a55', violet: '#c2a6e8', amber: '#e0bd4a', good: '#8fd0a5' } },
+      roles: { storage: '#b39c82', compute: '#72c9a4', model: '#c2a6e8', consumer: '#8fd0a5' } },
   },
 
-  // Grayscale (color-blind-safe; roles differ by shade, patterns carry the rest).
-  // Light-mode roles are deliberately dark so role-colored titles keep ≥3:1 on
-  // the role-tinted box — gray-on-gray is the one real contrast risk here.
+  // Grayscale (color-blind-safe; categories differ by shade).
   mono: {
     light: { surface: '#ffffff', bg: '#f4f5f7', text: '#16181d', textDim: '#2e333a', dim: 0.16,
-      roles: { slate: '#30353c', secondary: '#3d434c', primary: '#2c3138', violet: '#3a4048', amber: '#454b53', good: '#262b31' } },
+      roles: { storage: '#30353c', compute: '#3d434c', model: '#454b53', consumer: '#262b31' } },
     dark: { surface: '#14161b', bg: '#0d0f13', text: '#e6e8ee', textDim: '#b3b9c2', dim: 0.24,
-      roles: { slate: '#aeb4bd', secondary: '#9aa0ab', primary: '#c3c7cf', violet: '#8f96a0', amber: '#d8dbdf', good: '#b9bec6' } },
+      roles: { storage: '#aeb4bd', compute: '#9aa0ab', model: '#d8dbdf', consumer: '#b9bec6' } },
   },
 };
 

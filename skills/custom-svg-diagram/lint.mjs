@@ -51,6 +51,13 @@ const merge = {};
 for (const e of edges) merge[e.to] = (merge[e.to] || 0) + 1;
 for (const [id, c] of Object.entries(merge)) if (c > 4) flag(`node ${id} merges ${c} sources — split into two stages (≤ 4)`);
 
+// Every arrow must be labeled (legibility rule).
+for (const e of edges) if (!e.label || !e.label.trim()) flag(`unlabeled arrow ${e.from} → ${e.to} — label every edge`);
+// Group titles ≤ 3 words, no "·" compounding.
+for (const g of (spec.groups || [])) {
+  const t = g.title || g.label || '';
+  if (t && (t.trim().split(/[·\s]+/).length > 3 || t.includes('·'))) flag(`group title too long or compounded: "${t}" — use ≤ 3 words, one idea`);
+}
 // Groups.
 if (spec.groups && spec.groups.length > 3) flag(`${spec.groups.length} groups — cap at 3 to keep the visual hierarchy`);
 

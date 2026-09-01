@@ -110,15 +110,54 @@ const res = await page.evaluate(() => {
     }
     return false;
   };
-  // Text must clear both arrow lines and boxes.
+  // Text must clear boxes. A label may sit on its own line only if it has a
+  // pill knockout behind it (that's the designed read — the pill hides the line).
+  const pills = [...svg.querySelectorAll('.sv-pill')].map(p => { const b = p.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; });
+  const labelHasPill = l => pills.some(p => l.x + l.w / 2 > p.x && l.x + l.w / 2 < p.x + p.w && l.y + l.h / 2 > p.y && l.y + l.h / 2 < p.y + p.h);
   const labelHit = [];
   const labels = [...svg.querySelectorAll('.sv-arrow-lbl')].map(t => { const b = t.getBBox(); return { x: b.x, y: b.y, w: b.width, h: b.height }; });
   for (const l of labels) {
     let hit = false;
-    for (const a of arrows) for (const s of a.segs) if (segInRect(s, l)) { hit = true; break; }
+    for (const a of arrows) for (const s of a.segs) if (segInRect(s, l) && !labelHasPill(l)) { hit = true; break; }
     if (!hit) for (const b of boxes) if (!(l.x + l.w < b.x || l.x > b.x + b.w || l.y + l.h < b.y || l.y > b.y + b.h)) { hit = true; break; }
     if (hit) labelHit.push({ x: Math.round(l.x), y: Math.round(l.y) });
   }
+
+
+  // ---- 4 legibility self-checks ----
+  const MIN_TITLE = 16, MIN_SUB = 13;
+  const boxesAll = [...svg.querySelectorAll('rect[class^="sv-box"]')].map(r => ({ x:+r.getAttribute('x'), y:+r.getAttribute('y'), w:+r.getAttribute('width'), h:+r.getAttribute('height') }));
+  const textEls = [...svg.querySelectorAll('.sv-title, .sv-sub')];
+  const textOverflow = [];
+  for (const t of textEls) {
+    const bb = t.getBBox(); const cx = bb.x + bb.width / 2, cy = bb.y + bb.height / 2;
+    const box = boxesAll.find(b => cx > b.x && cx < b.x + b.w && cy > b.y && cy < b.y + b.h);
+    if (box && (bb.x < box.x + 1 || bb.x + bb.width > box.x + box.w - 1 || bb.y < box.y + 1 || bb.y + bb.height > box.y + box.h - 1)) {
+      textOverflow.push(t.textContent.trim());
+    }
+  }
+  const lblEls = [...svg.querySelectorAll('.sv-arrow-lbl')];
+  const lblBoxes = lblEls.map(t => { const b = t.getBBox(); return { el: t, x: b.x, y: b.y, w: b.width, h: b.height }; });
+  const labelIssues = [];
+  for (let i = 0; i < lblBoxes.length; i++) {
+    const L = lblBoxes[i];
+    const overBox = boxesAll.some(b => !(L.x + L.w <= b.x + 2 || L.x >= b.x + b.w - 2 || L.y + L.h <= b.y + 2 || L.y >= b.y + b.h - 2));
+    if (overBox) labelIssues.push(L.el.textContent.trim() + ' (on a box)');
+    for (let j = i + 1; j < lblBoxes.length; j++) {
+      const M = lblBoxes[j];
+      if (!(L.x + L.w <= M.x || L.x >= M.x + M.w || L.y + L.h <= M.y || L.y >= M.y + M.h)) labelIssues.push(L.el.textContent.trim() + ' ~ ' + M.el.textContent.trim());
+    }
+  }
+  const groupRects = [...svg.querySelectorAll('rect')].filter(r => !r.getAttribute('class') && (r.getAttribute('style') || '').includes('surface2'));
+  const groupOverflow = [];
+  for (const t of [...svg.querySelectorAll('.sv-grp, .sv-grp--sub, .sv-grp--inner')]) {
+    const bb = t.getBBox();
+    const g = groupRects.find(gr => bb.x >= +gr.getAttribute('x') && bb.x < +gr.getAttribute('x') + +gr.getAttribute('width'));
+    if (g && bb.x + bb.width > +g.getAttribute('x') + +g.getAttribute('width')) groupOverflow.push(t.textContent.trim());
+  }
+  const smallType = [];
+  for (const t of textEls) { const fs = parseFloat(getComputedStyle(t).fontSize); const min = t.classList.contains('sv-title') ? MIN_TITLE : MIN_SUB; if (fs < min) smallType.push(t.textContent.trim() + ' (' + fs + 'px)'); }
+  const legibility = { textOverflow, labelIssues, groupOverflow, smallType };
 
   return {
     arrows: arrows.length,
@@ -126,6 +165,7 @@ const res = await page.evaluate(() => {
     throughBox,
     overlapping,
     labelOnArrow: labelHit,
+    legibility,
     overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
   };
 });
@@ -134,7 +174,8 @@ await browser.close();
 
 console.log(JSON.stringify(res, null, 2));
 console.log('page errors:', pageErrors.length ? pageErrors : 'none');
+console.log('legibility: textOverflow=' + (res.legibility?.textOverflow?.length||0) + ' labelIssues=' + (res.legibility?.labelIssues?.length||0) + ' groupOverflow=' + (res.legibility?.groupOverflow?.length||0) + ' smallType=' + (res.legibility?.smallType?.length||0));
 
-const fail = (res.disconnected.length || res.throughBox.length || res.overlapping.length || res.labelOnArrow.length || res.overflow !== 0 || pageErrors.length);
+const fail = (res.disconnected.length || res.throughBox.length || res.overlapping.length || res.labelOnArrow.length || res.overflow !== 0 || pageErrors.length || (res.legibility && (res.legibility.textOverflow.length || res.legibility.labelIssues.length || res.legibility.groupOverflow.length || res.legibility.smallType.length)));
 if (fail) { console.error('\nFAIL: clean up the issues above.'); process.exit(1); }
 console.log('\nPASS: arrows connect to edges, none cross a box, none overlap, no text on an arrow.');
