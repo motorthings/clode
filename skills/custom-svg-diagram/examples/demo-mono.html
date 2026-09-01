@@ -1,0 +1,153 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Auto-layout demo &mdash; mono palette</title>
+<style>
+:root{--font-mono:'Source Code Pro','SF Mono',Consolas,monospace;}
+:root {
+  --surface: #ffffff; --surface2: rgb(243, 243, 244); --border-bright: rgb(208, 209, 210);
+  --bg: #f4f5f7; --text: #16181d; --text-dim: rgb(92, 93, 97); --text-muted: rgb(148, 149, 151);
+  --slate: #30353c; --slate-dim: rgba(48, 53, 60, 0.16);
+  --secondary: #3d434c; --secondary-dim: rgba(61, 67, 76, 0.16);
+  --primary: #2c3138; --primary-dim: rgba(44, 49, 56, 0.16);
+  --violet: #3a4048; --violet-dim: rgba(58, 64, 72, 0.16);
+  --amber: #454b53; --amber-dim: rgba(69, 75, 83, 0.16);
+  --good: #262b31; --good-dim: rgba(38, 43, 49, 0.16);
+}
+html.dark:root {
+  --surface: #14161b; --surface2: rgb(31, 33, 38); --border-bright: rgb(62, 64, 69);
+  --bg: #0d0f13; --text: #e6e8ee; --text-dim: rgb(167, 169, 175); --text-muted: rgb(117, 119, 124);
+  --slate: #aeb4bd; --slate-dim: rgba(174, 180, 189, 0.24);
+  --secondary: #9aa0ab; --secondary-dim: rgba(154, 160, 171, 0.24);
+  --primary: #c3c7cf; --primary-dim: rgba(195, 199, 207, 0.24);
+  --violet: #8f96a0; --violet-dim: rgba(143, 150, 160, 0.24);
+  --amber: #d8dbdf; --amber-dim: rgba(216, 219, 223, 0.24);
+  --good: #b9bec6; --good-dim: rgba(185, 190, 198, 0.24);
+}
+
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);margin:0;padding:32px}
+.wrap{background:var(--surface);border:1px solid var(--border-bright);border-radius:16px;padding:20px;max-width:1200px;margin:0 auto}
+.wrap svg{display:block;width:100%;height:auto}
+h1{font-size:13px;letter-spacing:1px;text-transform:uppercase;color:var(--text-muted);margin:0 0 6px}
+.note{font-size:11px;color:var(--text-dim);margin:10px 0 0;line-height:1.5}
+.sv-sec{font-size:11px;font-weight:700;letter-spacing:2px;fill:var(--text-muted);text-transform:uppercase}
+.sv-grp{font-size:9.5px;font-weight:700;letter-spacing:1.5px;fill:var(--text-muted);text-transform:uppercase}
+.sv-title{font-size:12px;font-weight:700;fill:var(--text);letter-spacing:.3px}
+.sv-sub{font-size:9px;fill:var(--text-dim);letter-spacing:.3px}
+.sv-arrow{fill:none;stroke:var(--text-muted);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.sv-arrow-d{fill:none;stroke:var(--text-muted);stroke-width:2;stroke-dasharray:3 3;stroke-linejoin:round;stroke-linecap:round}
+.sv-arrow--strong{fill:none;stroke:var(--secondary);stroke-width:2.75;stroke-linejoin:round;stroke-linecap:round}
+.sv-arrow-lbl{font-size:9.5px;fill:var(--text-muted);letter-spacing:.2px}
+.sv-box-source{stroke:var(--slate)} .sv-box-t1{stroke:var(--secondary)} .sv-box-t2{stroke:var(--primary)}
+.sv-box-loop{stroke:var(--violet)} .sv-box-llm{stroke:var(--amber)} .sv-box-out{stroke:var(--good)}
+
+</style></head><body>
+<h1>Auto-layout demo &mdash; fans + merges, no crossings (mono palette)</h1>
+<div class="wrap"><svg viewBox="0 0 1620 380" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="dagre auto-layout demo">
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--text-muted)"></path>
+  </marker>
+  <marker id="arrStrong" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" style="fill:var(--secondary)"></path>
+  </marker>
+  <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.32"></stop>
+    <stop offset="52%" stop-color="#ffffff" stop-opacity="0.06"></stop>
+    <stop offset="100%" stop-color="#ffffff" stop-opacity="0"></stop>
+  </linearGradient>
+  <filter id="shadow" x="-30%" y="-40%" width="160%" height="200%">
+    <feDropShadow dx="0" dy="1" stdDeviation="1.2" flood-color="#16213a" flood-opacity="0.10"></feDropShadow>
+    <feDropShadow dx="0" dy="3.5" stdDeviation="0" flood-color="#16213a" flood-opacity="0.22"></feDropShadow>
+    <feDropShadow dx="0" dy="10" stdDeviation="18" flood-color="#16213a" flood-opacity="0.14"></feDropShadow>
+  </filter>
+  <pattern id="pat0" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--text)" stroke-opacity="0.05" stroke-width="2"></line></pattern>
+  <pattern id="pat1" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="0" y1="0" x2="0" y2="8" stroke="var(--text)" stroke-opacity="0.05" stroke-width="2"></line></pattern>
+  <pattern id="pat2" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1" fill="var(--text)" fill-opacity="0.06"></circle></pattern>
+  <pattern id="pat3" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8 L8 0 M-4 4 L4 -4 M4 12 L12 4" stroke="var(--text)" stroke-opacity="0.05" stroke-width="1.5"></path></pattern>
+  <linearGradient id="gsource" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--slate)" stop-opacity="0.08"></stop><stop offset="100%" stop-color="var(--slate)" stop-opacity="0.2"></stop></linearGradient>
+  <linearGradient id="gt1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--secondary)" stop-opacity="0.08"></stop><stop offset="100%" stop-color="var(--secondary)" stop-opacity="0.2"></stop></linearGradient>
+  <linearGradient id="gt2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity="0.08"></stop><stop offset="100%" stop-color="var(--primary)" stop-opacity="0.2"></stop></linearGradient>
+  <linearGradient id="gloop" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--violet)" stop-opacity="0.08"></stop><stop offset="100%" stop-color="var(--violet)" stop-opacity="0.2"></stop></linearGradient>
+  <linearGradient id="gllm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--amber)" stop-opacity="0.1"></stop><stop offset="100%" stop-color="var(--amber)" stop-opacity="0.24"></stop></linearGradient>
+  <linearGradient id="gout" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--good)" stop-opacity="0.1"></stop><stop offset="100%" stop-color="var(--good)" stop-opacity="0.24"></stop></linearGradient>
+</defs>
+<g filter="url(#shadow)">
+  <rect x="40" y="124" width="150" height="92" rx="14" class="sv-box-source" style="fill:url(#gsource)" stroke-width="2"></rect>
+  <rect x="40" y="124" width="150" height="92" rx="14" fill="url(#pat0)"></rect>
+  <rect x="40" y="124" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="44" y1="125.5" x2="186" y2="125.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="62" y="166" style="fill:var(--slate)">Input</text>
+  <text class="sv-sub" x="62" y="182">source</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="310" y="198" width="150" height="92" rx="14" class="sv-box-t1" style="fill:url(#gt1)" stroke-width="2"></rect>
+  <rect x="310" y="198" width="150" height="92" rx="14" fill="url(#pat1)"></rect>
+  <rect x="310" y="198" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="314" y1="199.5" x2="456" y2="199.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="332" y="240" style="fill:var(--secondary)">Score</text>
+  <text class="sv-sub" x="332" y="256">deterministic</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="310" y="50" width="150" height="92" rx="14" class="sv-box-loop" style="fill:url(#gloop)" stroke-width="2"></rect>
+  <rect x="310" y="50" width="150" height="92" rx="14" fill="url(#pat3)"></rect>
+  <rect x="310" y="50" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="314" y1="51.5" x2="456" y2="51.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="332" y="92" style="fill:var(--violet)">Enrich</text>
+  <text class="sv-sub" x="332" y="108">grounded</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="580" y="166" width="150" height="92" rx="14" class="sv-box-loop" style="fill:url(#gloop)" stroke-width="2"></rect>
+  <rect x="580" y="166" width="150" height="92" rx="14" fill="url(#pat3)"></rect>
+  <rect x="580" y="166" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="584" y1="167.5" x2="726" y2="167.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="602" y="208" style="fill:var(--violet)">Validate</text>
+  <text class="sv-sub" x="602" y="224">QA</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="850" y="166" width="150" height="92" rx="14" class="sv-box-loop" style="fill:url(#gloop)" stroke-width="2"></rect>
+  <rect x="850" y="166" width="150" height="92" rx="14" fill="url(#pat3)"></rect>
+  <rect x="850" y="166" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="854" y1="167.5" x2="996" y2="167.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="872" y="208" style="fill:var(--violet)">Route</text>
+  <text class="sv-sub" x="872" y="224">owner</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="1120" y="40" width="150" height="92" rx="14" class="sv-box-out" style="fill:url(#gout)" stroke-width="2"></rect>
+  <rect x="1120" y="40" width="150" height="92" rx="14" fill="url(#pat1)"></rect>
+  <rect x="1120" y="40" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="1124" y1="41.5" x2="1266" y2="41.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="1142" y="82" style="fill:var(--good)">Track</text>
+  <text class="sv-sub" x="1142" y="98">outcome</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="1120" y="208" width="150" height="92" rx="14" class="sv-box-out" style="fill:url(#gout)" stroke-width="2"></rect>
+  <rect x="1120" y="208" width="150" height="92" rx="14" fill="url(#pat1)"></rect>
+  <rect x="1120" y="208" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="1124" y1="209.5" x2="1266" y2="209.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="1142" y="250" style="fill:var(--good)">Draft</text>
+  <text class="sv-sub" x="1142" y="266">human confirms</text>
+</g>
+<g filter="url(#shadow)">
+  <rect x="1390" y="124" width="150" height="92" rx="14" class="sv-box-out" style="fill:url(#gout)" stroke-width="2"></rect>
+  <rect x="1390" y="124" width="150" height="92" rx="14" fill="url(#pat1)"></rect>
+  <rect x="1390" y="124" width="150" height="92" rx="14" fill="url(#sheen)"></rect>
+  <line x1="1394" y1="125.5" x2="1536" y2="125.5" stroke="#ffffff" stroke-opacity="0.28" stroke-width="1.5" stroke-linecap="round"></line>
+  <text class="sv-title" x="1412" y="166" style="fill:var(--good)">Review</text>
+  <text class="sv-sub" x="1412" y="182">approve</text>
+</g>
+<path class="sv-arrow--strong" d="M 190 211.11111111111111 L 239.47719119796554 238.23194184184777 Q 250 244 262 244 L 310 244" marker-end="url(#arrStrong)"></path>
+<text class="sv-arrow-lbl" x="286" y="188">score it</text>
+<path class="sv-arrow" d="M 190 128.88888888888889 L 239.47719119796554 101.76805815815221 Q 250 96 262 96 L 310 96" marker-end="url(#arr)"></path>
+<text class="sv-arrow-lbl" x="286" y="40">ground it</text>
+<path class="sv-arrow--strong" d="M 460 244 L 508 244 Q 520 244 531.6764528049617 241.23224822400906 L 580 229.77777777777777" marker-end="url(#arrStrong)"></path>
+<path class="sv-arrow" d="M 460 119.33333333333333 L 508.54171868403057 134.43520136836506 Q 520 138 530.5228088020344 143.76805815815223 L 580 170.88888888888889" marker-end="url(#arr)"></path>
+<text class="sv-arrow-lbl" x="520" y="114">merge</text>
+<path class="sv-arrow--strong" d="M 730 212 L 778 212 Q 790 212 802 212 L 850 212" marker-end="url(#arrStrong)"></path>
+<path class="sv-arrow--strong" d="M 1000 235.33333333333334 L 1048.5417186840307 250.43520136836509 Q 1060 254 1072 254 L 1120 254" marker-end="url(#arrStrong)"></path>
+<path class="sv-arrow" d="M 1000 188.66666666666666 L 1048.5417186840307 173.56479863163491 Q 1060 170 1072 170 L 1183 170 Q 1195 170 1207 170 L 1318 170 Q 1330 170 1342 170 L 1390 170" marker-end="url(#arr)"></path>
+<path class="sv-arrow" d="M 460 90.44444444444444 L 508.0327869465195 86.88646022618374 Q 520 86 532 86 L 643 86 Q 655 86 667 86 L 778 86 Q 790 86 802 86 L 913 86 Q 925 86 937 86 L 1048 86 Q 1060 86 1072 86 L 1120 86" marker-end="url(#arr)"></path>
+<path class="sv-arrow" d="M 1270 86 L 1318 86 Q 1330 86 1340.1378289066508 92.42062497421213 L 1390 124" marker-end="url(#arr)"></path>
+<path class="sv-arrow--strong" d="M 1270 254 L 1318 254 Q 1330 254 1340.1378289066508 247.57937502578787 L 1390 216" marker-end="url(#arrStrong)"></path>
+</svg></div>
+<p class="note">Generated by layout() via @dagrejs/dagre, styled by cssFor('mono'). Every arrow ends on a box edge; labels clear the lines; the three arrows into 'Review' converge on its left edge (legitimate).</p>
+</body></html>
