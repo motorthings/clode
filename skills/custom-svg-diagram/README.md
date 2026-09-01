@@ -36,6 +36,10 @@ node check.mjs path/to/diagram.html /path/to/chrome-headless-shell
 # → [geometry] PASS   [color] PASS
 ```
 
+## Legibility method (hard rules)
+
+4 semantic categories (storage / compute / model / consumer, one color per category); short chip group labels (≤3 words, tracking ≤0.08em, reserved top band, nested dashed/small-caps); flat auto-sized boxes with centered text (title ≥16px, sub ≥13px, subtitle wraps at ~24 chars); every arrow labeled in a pill knockout. `verify.mjs` runs four legibility self-checks (text fits container, no label over border/label, group label fits width, type minimums).
+
 ## The rule it enforces (verified, not assumed)
 
 An arrow must end exactly on a box edge, its whole path must stay in open space (never cross a box interior), it must not collide with another arrow mid-diagram, and no label may touch a box or a line. Arrows converging on a shared box edge (many arrows into one box) are allowed — that's normal. `verify.mjs` proves all of this in a browser.
