@@ -455,9 +455,11 @@ If they need to share it to an enterprise workspace: "Have your workspace admin 
 
 **Do not stop at "here's your skill."** A skill that has never been measured is a guess. Three steps, in order.
 
-**1. Install check.** Tell the user:
+**1. Install check.** Where the skill lives depends on where you built it:
 
-> "Skill written to `~/.claude/skills/<name>/SKILL.md`. Reload your Claude Code session to pick it up."
+- **Claude Code** — written to `~/.claude/skills/<name>/SKILL.md`. Tell them to reload the session to pick it up.
+- **Claude Desktop** — it is the ZIP they uploaded under Settings → Capabilities → Skills. Already live; nothing to reload.
+- **claude.ai** — it is the instruction block they pasted into the Project. Already live.
 
 **2. Generate the evals.** Read `references/eval-procedure.md` and work through it. It takes the SKILL.md you just wrote, extracts its directives into five categories, and produces `<skill>/evals/evals.json` plus a `PLAN.md` coverage table where every case cites the line it came from. Validate the suite with `scripts/validate_evals.py` before you go further.
 
@@ -465,7 +467,11 @@ Then read the coverage table back to the user. Two things to say out loud:
 - Which categories have cases, and which came back empty. An empty `gate` or `fence` row is a real finding — it means the skill you just wrote has no precondition and no prohibition, which is worth knowing before anyone relies on it.
 - The count. A core set outside 8-12 means the skill was under-specified, not that the suite is thin.
 
-**3. Run the loop. You are not finished until `benchmark.json` exists.**
+**3. Measure it — or, where you can't, check it. Either way you finish with an artifact in `evals/`.**
+
+The measured loop runs each case twice — with the skill, and against a skill-free baseline — and reports the delta. That baseline needs a second Claude with no skill loaded: a `claude` CLI or subagents, plus the `skill-creator` runner. You have those in **Claude Code**. You do not in **Claude Desktop** or **claude.ai** — a sandbox with no CLI and no network, so no independent baseline can be formed there. Pick the branch for where you are. **Never stop at validation, never error out, and never end on "I can't run the eval"** — run the one your environment supports, and finish.
+
+**In Claude Code — run the measured loop. You are not finished until `benchmark.json` exists.**
 
 Validation is not measurement. A suite that passes the validator has been checked for shape, not for behaviour, and stopping there is the same "narrate it back" failure this skill used to have. The completion condition for this entire procedure is a `benchmark.json` and a rendered viewer for the skill you built. If you reach the end of step 2 and stop, you have not finished.
 
@@ -494,7 +500,25 @@ Four things to carry over, each learned the hard way:
 - **Run from a scratch directory.** Not from `~/.claude` and not inside a repo. The runner resolves its project root by walking up, so a stray `.claude` above the working directory gets captured.
 - **Verify completion before computing anything.** Every arm must have written a non-empty response. A truncated arm scores zero under the strict grading rule and silently inflates the delta.
 
-**If you genuinely cannot run the loop** — no subagents available, no budget, the user asked you to stop — say so in one line and hand the user the exact command to run themselves. Saying "I couldn't run it" is fine. Saying nothing and stopping at validation is not.
+**If you genuinely cannot run the loop even here** — no subagents available, no budget, the user asked you to stop — say so in one line and hand the user the exact command to run themselves. Saying "I couldn't run it" is fine. Saying nothing and stopping at validation is not.
+
+**In Claude Desktop or claude.ai — run the quality check. You are not finished until the report exists.**
+
+No independent baseline can run in the sandbox, so you will not claim a delta you did not measure. What you can do — and must, so the job finishes clean — is prove the skill is well formed and its suite is sound. A standard quality check, all of it stdlib, all of it inside the sandbox. `<skill-dir>` below is wherever this skill is installed (the uploaded skill folder in Desktop).
+
+1. **Validate the suite:**
+   ```
+   python3 <skill-dir>/scripts/validate_evals.py <skill>/evals/evals.json --tier core --source <skill>/SKILL.md
+   ```
+   Confirms the suite is shaped right and every case traces to a real directive.
+2. **Lint the skill:**
+   ```
+   python3 <skill-dir>/scripts/check_skill.py <skill>/SKILL.md
+   ```
+   Confirms the SKILL.md is well formed — frontmatter with a name and description, triggers named, sections written as directives rather than prose, an anti-patterns section with at least three items, and no leftover placeholders.
+3. **Report both, together,** with the coverage table from step 2. One line on what this is: a well-formedness and coverage check, not a measured baseline — the delta runs in Claude Code with the loop above.
+
+This branch always produces an artifact and always exits clean. A malformed skill or a broken suite is a finding to report, not an error to crash on.
 
 **4. Close the loop, once.** They should leave able to do this without you. After
 the results land, walk the arc in a short paragraph, using the skill they just
