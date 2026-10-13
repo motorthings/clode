@@ -67,20 +67,35 @@ change to `SKILL.md` is picked up live; a brand-new skill folder needs
 `/reload-skills`.
 
 **Claude Desktop and claude.ai.** A folder on disk does nothing here. Skills come
-from your account, added by uploading a ZIP at **Customize > Skills**. Two traps:
+from your account, added by uploading a ZIP. Four steps:
 
-- **Code execution has to be on first** (Settings > Capabilities). Otherwise the
-  upload appears to succeed and nothing runs.
-- **The ZIP must contain the skill folder as its top level.** A `SKILL.md` at the
-  archive root is not recognized as a skill.
+1. **Turn on code execution first.** Settings > Capabilities > enable the
+   analysis / code execution tool. Skip this and the upload appears to succeed
+   while nothing runs.
+2. **Build the ZIP with the skill folder at the top level.** A `SKILL.md` at the
+   archive root is not recognized as a skill, so zip the folder, not its
+   contents. Exclude the caches, or they travel along:
+   ```
+   cd ~/.claude/skills
+   zip -r skill-builder.zip skill-builder \
+     -x '*/.git/*' '*/__pycache__/*' '*.pyc' '*/.pytest_cache/*'
+   unzip -l skill-builder.zip | head    # every entry must start with skill-builder/
+   ```
+3. **Upload it.** Claude Desktop: Settings > Capabilities > Skills > Upload
+   skill. claude.ai: the same, under your account's skill settings.
+4. **Invoke it** by asking to build a skill, same as in Claude Code.
 
-```
-cd ~/.claude/skills && zip -r skill-builder.zip skill-builder/
-unzip -l skill-builder.zip | head    # every entry must start with skill-builder/
-```
+Keep `scripts/` in the ZIP — the eval tooling lives there. The `tests/` folder
+travels along but only runs in Claude Code.
 
-Include `scripts/` in the ZIP; that path is where the eval tooling lives. The
-`tests/` folder travels along but only runs in Claude Code.
+**What runs in Desktop, and what doesn't.** The interview and the generated
+skill work fully. The final eval step changes shape: the measured loop needs a
+skill-free baseline, which needs a `claude` CLI and network that Desktop's
+sandbox doesn't have. So in Desktop the skill runs a **quality check** instead —
+it validates the eval suite and lints the SKILL.md for well-formedness, finishes
+with a report, and tells you to run the measured version in Claude Code. It
+never errors out or dead-ends at "I can't." The with/without-baseline number is
+the one piece that is Claude Code only.
 
 **The trap worth knowing.** A desktop *Cowork* or cloud session does not read
 `~/.claude/skills/`. It reads your account skills instead. A skill that works in
