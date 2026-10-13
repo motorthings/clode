@@ -25,3 +25,8 @@ Thumbs.db
 # Test files
 test_*
 scratch/
+
+# ...except tests that are part of a skill. The `test_*` rule above would
+# otherwise strip them, and a skill ships with its tests.
+!skills/*/tests/
+!skills/*/tests/*

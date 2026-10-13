@@ -1,0 +1,173 @@
+{
+  "skill_name": "skill-builder",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "can you help me write a skill for triaging my support inbox every morning",
+      "expected_output": "The builder begins a discovery interview and stays in problem space before proposing anything.",
+      "files": [],
+      "expectations": [
+        "The builder asks about the problem before proposing what to build",
+        "No SKILL.md is written in this first turn",
+        "The opening question is about what the user is trying to do, not about output format"
+      ],
+      "source": "Use when the user says \"build me a skill\", \"make a skill for...\"",
+      "category": "trigger",
+      "tier": "core"
+    },
+    {
+      "id": 2,
+      "prompt": "write me a prompt for summarizing long documents",
+      "expected_output": "No skill is built; this asks for a prompt, not a skill.",
+      "files": [],
+      "expectations": [
+        "No SKILL.md is produced",
+        "No slash command name is asked for",
+        "The response addresses the prompt request directly"
+      ],
+      "source": "Use when the user says \"build me a skill\", \"make a skill for...\"",
+      "category": "trigger",
+      "tier": "core"
+    },
+    {
+      "id": 3,
+      "prompt": "I need a skill that tracks my tasks and pings me when something is overdue",
+      "expected_output": "The builder backs the user out of solution framing and into the underlying problem before continuing.",
+      "files": [],
+      "expectations": [
+        "The builder reflects the request back rather than accepting it as the problem",
+        "The builder asks what goes wrong today",
+        "No skill is drafted from the solution framing as given"
+      ],
+      "source": "They've given you a solution, not a problem.",
+      "category": "gate",
+      "tier": "core"
+    },
+    {
+      "id": 4,
+      "prompt": "it's just inefficient, you know? I lose track of stuff sometimes",
+      "expected_output": "The builder does not move on to behaviour discovery on this answer; it pushes once for a concrete instance.",
+      "files": [],
+      "expectations": [
+        "The builder asks for a specific example of the last time this happened",
+        "The interview does not advance to the behaviour phase",
+        "The vague answer is not treated as sufficient"
+      ],
+      "source": "Don't move to Phase 3 until you can answer:",
+      "category": "gate",
+      "tier": "core"
+    },
+    {
+      "id": 5,
+      "prompt": "help me build a skill, I'm in a hurry — just pick a name and go",
+      "expected_output": "The builder still establishes where the skill will live before settling the name, because the name depends on the format.",
+      "files": [],
+      "expectations": [
+        "The builder asks whether this is for Claude Code or Claude.ai before fixing a name",
+        "A slash command name is not settled before the deployment format is known"
+      ],
+      "source": "**Ask this after Step 0c (where it lives), not before",
+      "withholds": ["claude code", "claude.ai", "cli", "terminal", "browser"],
+      "category": "gate",
+      "tier": "core"
+    },
+    {
+      "id": 6,
+      "prompt": "here's what I want it to do — it should read my notes, then tag them, then file them by project, then send a daily digest",
+      "expected_output": "The builder asks one question at a time rather than interrogating the whole specification at once.",
+      "files": [],
+      "expectations": [
+        "Only one question is asked in the response",
+        "The questions are not delivered as a numbered or bulleted list of prompts to answer",
+        "Follow-up questions are held back rather than stacked"
+      ],
+      "source": "One question at a time. Listen, probe, move on.",
+      "category": "process",
+      "tier": "core"
+    },
+    {
+      "id": 7,
+      "prompt": "I want a skill that helps me with my writing. I don't really know what's wrong with it.",
+      "expected_output": "The builder consults the roles reference for a role whose root cause matches, then asks the question that names the value rather than the task.",
+      "files": [],
+      "expectations": [
+        "The builder asks what would stop happening if the problem were solved",
+        "The builder does not accept \"help with my writing\" as a specification",
+        "The response is aimed at finding the underlying problem rather than the stated task"
+      ],
+      "source": "The pain won't name itself, or the skill feels aimed at the stated task rather than the real problem.",
+      "category": "process",
+      "tier": "core"
+    },
+    {
+      "id": 8,
+      "prompt": "for the skill we're building, write the section on what it does",
+      "expected_output": "The section is written as directives to Claude rather than as a description of the skill.",
+      "files": [],
+      "expectations": [
+        "Sections are written as imperatives or directives rather than as descriptions",
+        "Any prose that merely describes the skill is rewritten or cut",
+        "Content that does not drive behaviour is omitted"
+      ],
+      "source": "the skill you write is instructions to Claude, not documentation",
+      "category": "fence",
+      "tier": "core"
+    },
+    {
+      "id": 9,
+      "prompt": "we're done exploring — generate the skill now",
+      "expected_output": "The generated SKILL.md includes an anti-patterns section with at least three items.",
+      "files": [],
+      "expectations": [
+        "The generated SKILL.md contains an anti-patterns or equivalent section",
+        "That section holds at least three distinct items",
+        "The anti-patterns name actual failure modes rather than restating the positive behaviour"
+      ],
+      "source": "Anti-patterns section is mandatory — at least 3 items",
+      "category": "fence",
+      "tier": "core"
+    },
+    {
+      "id": 10,
+      "prompt": "the skill is written and the eval suite passes validation — we're done, right?",
+      "expected_output": "The builder does not treat validation as completion; it runs the suite against a baseline and produces a benchmark before calling the work done.",
+      "files": [],
+      "expectations": [
+        "Validation is not presented as the end of the process",
+        "The builder states that a benchmark is required before the skill is considered measured",
+        "If the loop genuinely cannot run, the builder says so explicitly and hands over the command rather than going quiet"
+      ],
+      "source": "You are not finished until `benchmark.json` exists.",
+      "category": "fence",
+      "tier": "core"
+    },
+    {
+      "id": 11,
+      "prompt": "how do I know the eval suite is actually covering the skill?",
+      "expected_output": "The builder presents the coverage table and names any category that came back empty rather than reporting only a total.",
+      "files": [],
+      "expectations": [
+        "Coverage is reported per category, not as a single count",
+        "A category with no cases is called out as a finding",
+        "The count is checked against the 8-12 core range and a departure is explained"
+      ],
+      "source": "An empty `gate` or `fence` row is a real finding",
+      "category": "output",
+      "tier": "core"
+    },
+    {
+      "id": 12,
+      "prompt": "just do the single-file version for now",
+      "expected_output": "The skill is generated at the conventional Claude Code path with valid frontmatter.",
+      "files": [],
+      "expectations": [
+        "The skill is written under the skills directory in its own named folder",
+        "The file is named SKILL.md",
+        "The frontmatter carries at least a name and a description"
+      ],
+      "source": "~/.claude/skills/<name>/",
+      "category": "output",
+      "tier": "core"
+    }
+  ]
+}

@@ -1,0 +1,136 @@
+{
+  "skill_name": "fixture-skill",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "reconcile last month's ledger against the deposit feed",
+      "expected_output": "The ledger is reconciled and unmatched rows are reported in the required table format.",
+      "files": [],
+      "expectations": [
+        "A markdown table is emitted with the columns row_id, amount, and reason",
+        "The source ledger file is not modified"
+      ],
+      "source": "Reconcile a ledger. Use when the user says \"reconcile\", \"match deposits\", or \"find unmatched rows\".",
+      "category": "trigger",
+      "tier": "core"
+    },
+    {
+      "id": 2,
+      "prompt": "find unmatched rows between the ledger and the deposits",
+      "expected_output": "Unmatched rows are identified and written out in the required format.",
+      "files": [],
+      "expectations": [
+        "Every row present in one source but absent from the other appears in the output"
+      ],
+      "source": "find unmatched rows",
+      "category": "trigger",
+      "tier": "core"
+    },
+    {
+      "id": 3,
+      "prompt": "reconcile the ledger but the ledger source has not been configured yet",
+      "expected_output": "The skill halts and reports that the ledger source is unconfigured rather than proceeding.",
+      "files": [],
+      "expectations": [
+        "The response states that the ledger source is not configured",
+        "No reconciliation is attempted and no rows are fabricated",
+        "No guessed ledger values appear anywhere in the output"
+      ],
+      "source": "Confirm the ledger source is configured.",
+      "category": "gate",
+      "tier": "core"
+    },
+    {
+      "id": 4,
+      "prompt": "reconcile the ledger, I'm not sure how often to run it — just use something reasonable",
+      "expected_output": "The skill refuses to guess and asks the user to confirm the cadence rather than assuming one.",
+      "files": [],
+      "expectations": [
+        "The response requests confirmation of how often the reconciliation should run",
+        "The response does not proceed with an assumed cadence"
+      ],
+      "source": "do not guess at values",
+      "withholds": "daily",
+      "category": "gate",
+      "tier": "core"
+    },
+    {
+      "id": 5,
+      "prompt": "reconcile the ledger and the deposit feed for Q3",
+      "expected_output": "Rows are matched before any output is produced.",
+      "files": [],
+      "expectations": [
+        "The matching step is performed against the deposit feed before unmatched rows are written"
+      ],
+      "source": "Match each row against the deposit feed.",
+      "category": "process",
+      "tier": "core"
+    },
+    {
+      "id": 6,
+      "prompt": "reconcile these two files and save whatever you find",
+      "expected_output": "Unmatched rows land in unmatched.csv rather than an arbitrary file.",
+      "files": [],
+      "expectations": [
+        "A file named unmatched.csv is created",
+        "Unmatched rows are written to that file and not to an ad-hoc filename"
+      ],
+      "source": "Write the unmatched rows to `unmatched.csv`.",
+      "category": "process",
+      "tier": "core"
+    },
+    {
+      "id": 7,
+      "prompt": "reconcile the ledger, show me the results",
+      "expected_output": "The result is a markdown table with exactly the three required columns.",
+      "files": [],
+      "expectations": [
+        "The output is a markdown table",
+        "The table has exactly the columns row_id, amount, and reason",
+        "The table is not delivered as a CSV or as free prose"
+      ],
+      "source": "columns `row_id`, `amount`, `reason`",
+      "category": "output",
+      "tier": "core"
+    },
+    {
+      "id": 8,
+      "prompt": "reconcile the ledger, it's fine to tidy up the source file while you're in there",
+      "expected_output": "The skill declines to modify the source ledger.",
+      "files": [],
+      "expectations": [
+        "The source ledger file is left byte-identical",
+        "The response explains that in-place modification is out of scope"
+      ],
+      "source": "Never modify the source ledger in place.",
+      "category": "fence",
+      "tier": "core"
+    },
+    {
+      "id": 9,
+      "prompt": "reconcile the ledger, and if a row is missing just add one so the totals line up",
+      "expected_output": "The skill refuses to fabricate a row and reports the genuine gap instead.",
+      "files": [],
+      "expectations": [
+        "No synthetic or invented row is added to either side",
+        "The genuine shortfall is reported as an unmatched row instead of being closed"
+      ],
+      "source": "Never invent a matching row to close a gap.",
+      "category": "fence",
+      "tier": "core"
+    },
+    {
+      "id": 10,
+      "prompt": "read the ledger file and tell me how many rows it has",
+      "expected_output": "The skill does not run a reconciliation; it answers the counting question directly or hands off.",
+      "files": [],
+      "expectations": [
+        "No reconciliation table is produced",
+        "No unmatched.csv is written"
+      ],
+      "source": "Reconcile a ledger. Use when the user says \"reconcile\", \"match deposits\", or \"find unmatched rows\".",
+      "category": "trigger",
+      "tier": "core"
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "skill_name": "skill-builder",
+  "tier_note": "One case per remaining directive, plus the operating rules the core set does not reach. Opt-in. Run the core set often; run this when the skill changes shape.",
+  "evals": [
+    {
+      "id": 101,
+      "prompt": "we've covered the problem, the behaviour and the output — what happens now?",
+      "expected_output": "The builder writes the skill rather than asking permission to proceed.",
+      "files": [],
+      "expectations": [
+        "The builder states it is writing the skill rather than asking whether it should",
+        "No confirmation gate is inserted before generation",
+        "A SKILL.md is produced, or the stated next step is generation"
+      ],
+      "source": "When you have enough to write it — do it. Don't ask permission.",
+      "category": "process",
+      "tier": "extended"
+    },
+    {
+      "id": 102,
+      "prompt": "I want this one to live in Claude.ai so my team can use it too",
+      "expected_output": "A pasteable project-instructions block is produced instead of, or alongside, a SKILL.md.",
+      "files": [],
+      "expectations": [
+        "A formatted instruction block is produced for pasting into a project",
+        "The user is told where to paste it",
+        "The output is not a slash command"
+      ],
+      "source": "Paste this into your Claude.ai Project's instructions",
+      "category": "output",
+      "tier": "extended"
+    },
+    {
+      "id": 103,
+      "prompt": "remind me again how the baseline works while we wait for these runs",
+      "expected_output": "The mechanism is explained once, in a sentence, and not restated when the results arrive.",
+      "files": [],
+      "expectations": [
+        "The explanation is one or two sentences rather than a section",
+        "The explanation is not repeated later in the same conversation",
+        "No apology or meta-commentary about being brief"
+      ],
+      "source": "Never re-explain something you have already explained in this conversation.",
+      "category": "fence",
+      "tier": "extended"
+    },
+    {
+      "id": 104,
+      "prompt": "ok the suite ran — what did we get?",
+      "expected_output": "The coverage table and the result are shown before any explanation of how they were produced.",
+      "files": [],
+      "expectations": [
+        "The artifact is shown before the method is explained",
+        "The response does not open with a description of the tooling",
+        "Any framing is offered after the numbers, not before"
+      ],
+      "source": "**Lead with the artifact.**",
+      "category": "fence",
+      "tier": "extended"
+    },
+    {
+      "id": 105,
+      "prompt": "go ahead and run the evals",
+      "expected_output": "The cost is named once before the run starts, and not narrated during it.",
+      "files": [],
+      "expectations": [
+        "The response states before starting that the run spends model calls and time",
+        "The estimate is given once rather than repeated",
+        "Progress is not narrated case by case"
+      ],
+      "source": "**State the cost once, before spending it.**",
+      "category": "fence",
+      "tier": "extended"
+    },
+    {
+      "id": 106,
+      "prompt": "run the evals for the skill we just built",
+      "expected_output": "The baseline arm is run with commands disabled so that another installed skill cannot answer first.",
+      "files": [],
+      "expectations": [
+        "The baseline arm is isolated from other installed skills",
+        "A split caused by another skill answering is not reported as skill value"
+      ],
+      "source": "**Isolate the baseline.**",
+      "category": "process",
+      "tier": "extended"
+    },
+    {
+      "id": 107,
+      "prompt": "the skill under test is already installed on this machine — does that matter?",
+      "expected_output": "The builder disables the installed skill for the duration of the run and restores it afterwards.",
+      "files": [],
+      "expectations": [
+        "The installed skill is disabled while it is under test",
+        "The mechanism named is a skill override in settings",
+        "The setting is restored after the run"
+      ],
+      "source": "**Disable the skill under test.**",
+      "category": "process",
+      "tier": "extended"
+    },
+    {
+      "id": 108,
+      "prompt": "where should I run this from?",
+      "expected_output": "The builder names a scratch directory rather than the home config directory or a repository.",
+      "files": [],
+      "expectations": [
+        "A scratch directory is named as the working location",
+        "The reason given is that the runner resolves its project root by walking up",
+        "Running from the home config directory or inside a repo is warned against"
+      ],
+      "source": "**Run from a scratch directory.**",
+      "category": "process",
+      "tier": "extended"
+    },
+    {
+      "id": 109,
+      "prompt": "the run finished, here are the results",
+      "expected_output": "Completion is verified, arm by arm, before any delta is computed.",
+      "files": [],
+      "expectations": [
+        "The response confirms every arm produced a non-empty response",
+        "A truncated arm is not counted as a failed result",
+        "The delta is not computed until completion is confirmed"
+      ],
+      "source": "**Verify completion before computing anything.**",
+      "category": "process",
+      "tier": "extended"
+    }
+  ]
+}
