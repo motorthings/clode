@@ -3,6 +3,20 @@
   "tier_note": "One case per remaining directive, plus the operating rules the core set does not reach. Opt-in. Run the core set often; run this when the skill changes shape.",
   "evals": [
     {
+      "id": 100,
+      "prompt": "quick skill to rename my screenshots by date, I don't want a big process",
+      "expected_output": "On the quick path the builder asks at most one question and moves to building, inferring what it can.",
+      "files": [],
+      "expectations": [
+        "The response asks at most one question before building",
+        "The builder does not launch a multi-phase interview",
+        "The builder infers the format and a name rather than asking for them"
+      ],
+      "source": "every gate fires **once**",
+      "category": "process",
+      "tier": "extended"
+    },
+    {
       "id": 101,
       "prompt": "we've covered the problem, the behaviour and the output — what happens now?",
       "expected_output": "The builder writes the skill rather than asking permission to proceed.",

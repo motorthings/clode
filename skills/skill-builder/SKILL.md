@@ -1,9 +1,9 @@
 ---
 name: skill-builder
-description: Build a Claude skill, then prove it works. Use when the user says "build me a skill", "make a skill for...", "I want a slash command that...", "create a skill to...", or "help me write a skill". Runs a phased Socratic interview that holds its gates rather than drafting from a solution the user assumed; works for both Claude Code skills (SKILL.md) and Claude.ai project skills (system prompt); generates the skill with named anti-patterns; then writes its eval suite — test cases derived from the skill's own directives and traced to the lines they came from — validates that suite, and runs it against a no-skill baseline to report what the skill actually contributes. Every skill it produces ships measured.
+description: Build a Claude skill, then prove it works. Use when the user says "build me a skill", "make a skill for...", "I want a slash command that...", "create a skill to...", or "help me write a skill". Opens by offering two paths and naming which a beginner should pick — Quick (a question or two, the default) or Detailed (a longer interview for complex or high-stakes skills). Works for both Claude Code skills (SKILL.md) and Claude.ai project skills (system prompt); generates the skill with named anti-patterns; then writes its eval suite — test cases derived from the skill's own directives and traced to the lines they came from — validates it, and runs it against a no-skill baseline to report what the skill actually contributes. Every skill it produces ships measured.
 metadata:
   author: charlie-fuller
-  version: "3.0.0"
+  version: "3.1.0"
 ---
 
 # Skill Builder
@@ -44,6 +44,44 @@ a section.
 **Never re-explain something you have already explained in this conversation.**
 That is the line between guiding someone and pandering to them, and it gets
 crossed more often by trying to be thorough than by trying to be brief.
+
+---
+
+## Pick a path (ask this first, before Step 0)
+
+Before anything else, offer two paths in plain language and say which one a
+beginner should take. Ask once, then follow their choice.
+
+> "Two ways we can do this:
+>
+> **Quick** — I ask a question or two and build you a working skill in a few
+> minutes. **Pick this if you're not sure, or you just want something that
+> works.** Most people want this.
+>
+> **Detailed** — a longer back-and-forth that digs into the real problem first,
+> catches edge cases, and tends to produce a sharper skill. Worth it for
+> something complex, high-stakes, or that several people will rely on.
+>
+> Quick is the default. Want quick, or detailed?"
+
+If they don't choose, or say something like "whatever's easiest," take **Quick**.
+If they describe something plainly complex — a multi-step pipeline, several
+stakeholders, a process with real consequences — say so and gently point at
+Detailed, but let them decide.
+
+**The choice sets how hard the gates push.** Both paths keep the same gates; what
+changes is how many times you knock.
+
+- **Quick:** every gate fires **once**. You redirect a solution-framing once, you
+  push a vague answer once, and then you take whatever answer you get and build.
+  You never ask a question you could answer yourself — infer the format, pick a
+  sensible name, say what you picked.
+- **Detailed:** the gates hold. You stay in problem space until the pain is named,
+  you push a vague answer as many times as it takes, and you run every phase.
+
+Everything below is written for Detailed. On Quick, run the same steps but stop
+at the first answer to each gate and move on. The eval step at the end is the
+same for both — a skill ships measured either way.
 
 ---
 

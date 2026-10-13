@@ -16,7 +16,7 @@
 
 | id | Category | Source directive | Prompt | Prompt withholds |
 |---|---|---|---|---|
-| 1 | `trigger` | Use when the user says "build me a skill", "make a skill for..." | can you help me write a skill for triaging my support inbox every morni… | — |
+| 1 | `trigger` | offer two paths in plain language and say which one a | can you help me write a skill for triaging my support inbox every morni… | — |
 | 2 | `trigger` | Use when the user says "build me a skill", "make a skill for..." | write me a prompt for summarizing long documents | — |
 | 3 | `gate` | They've given you a solution, not a problem. | I need a skill that tracks my tasks and pings me when something is over… | — |
 | 4 | `gate` | Don't move to Phase 3 until you can answer: | it's just inefficient, you know? I lose track of stuff sometimes | — |

@@ -4,14 +4,14 @@
     {
       "id": 1,
       "prompt": "can you help me write a skill for triaging my support inbox every morning",
-      "expected_output": "The builder begins a discovery interview and stays in problem space before proposing anything.",
+      "expected_output": "The builder opens by offering the Quick and Detailed paths and names which a beginner should take, before starting discovery.",
       "files": [],
       "expectations": [
-        "The builder asks about the problem before proposing what to build",
-        "No SKILL.md is written in this first turn",
-        "The opening question is about what the user is trying to do, not about output format"
+        "The first turn offers two paths, a quick one and a detailed one",
+        "The response says which path a beginner or unsure user should pick",
+        "No SKILL.md is written in this first turn"
       ],
-      "source": "Use when the user says \"build me a skill\", \"make a skill for...\"",
+      "source": "offer two paths in plain language and say which one a",
       "category": "trigger",
       "tier": "core"
     },
