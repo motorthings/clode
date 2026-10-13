@@ -377,10 +377,19 @@ When you have enough to write it — do it. Don't ask permission. Tell them:
 ├── SKILL.md
 └── references/
     ├── <template-or-example>.md   (if a template was identified)
-    └── <phase-reference>.md       (if phases are complex enough to warrant it)
+    ├── <phase-reference>.md       (if phases are complex enough to warrant it)
+    └── <knowledge-base>.txt       (reference material the skill reads at runtime)
 ```
 
 Only create reference files if the SKILL.md would be unreadable without them. Prefer inline.
+
+**Knowledge-base and reference docs can be any format — but the format decides how the skill reads them.** A skill can carry a KB doc, a policy, a lookup table, a style guide. Pick the format by how it will be read, not by what it arrived as:
+
+- **`.md` or `.txt`** — Claude reads these directly, in every environment, with no parse step. **Default to these.** If the source is a Word doc or a spreadsheet and the content is really just text or a small table, convert it once at build time (`markitdown <file>` turns a `.docx`, `.xlsx`, `.csv`, or `.pdf` into markdown) and bundle the converted file. The skill then works everywhere with nothing to install.
+- **Spreadsheets (`.xlsx`, `.csv`) and Word docs (`.docx`), kept as-is** — allowed, and the right call when the structure matters (formulas, many sheets, a table too big to inline). They are binary, so the skill cannot read them by glancing at the file. Bundle the original **and** give the skill an explicit first step to parse it: `markitdown` in Claude Code, or code execution (`openpyxl`, `python-docx`, the stdlib `csv` module) in the Desktop sandbox. `.csv` is the exception — it is plain text, so Claude reads it directly like `.txt`.
+- **State the dependency in the SKILL.md.** A skill that silently assumes `markitdown` or a Python library will fail on a machine that lacks it, and fail quietly. Name the parse step and its requirement in the skill's first instruction, the same way `environment.md` governs connectors.
+
+When in doubt, convert to `.md` at build time and bundle that. A readable file beats a faithful one.
 
 ---
 
