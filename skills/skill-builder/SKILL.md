@@ -69,19 +69,25 @@ If they describe something plainly complex — a multi-step pipeline, several
 stakeholders, a process with real consequences — say so and gently point at
 Detailed, but let them decide.
 
-**The choice sets how hard the gates push.** Both paths keep the same gates; what
-changes is how many times you knock.
+**Skip the offer when the ask is already quick.** If the request itself says
+*quick*, *simple*, *basic*, *just*, *fast*, or reads like someone who wants a
+result, not a conversation — don't offer paths at all. Go straight to Quick.
 
-- **Quick:** every gate fires **once**. You redirect a solution-framing once, you
-  push a vague answer once, and then you take whatever answer you get and build.
-  You never ask a question you could answer yourself — infer the format, pick a
-  sensible name, say what you picked.
+**The choice sets how many questions stand between them and a working skill.**
+
+- **Quick (the default):** ask **at most one** question, then build. If the
+  request is already clear enough to build from, ask nothing — infer the format,
+  pick a name, pick sensible defaults, and write the skill, saying in one line
+  what you assumed. If one thing genuinely blocks you, ask that single thing and
+  nothing else. Don't redirect solution-framing, don't push a vague answer, don't
+  run phases. You can always sharpen it after they see a first version.
 - **Detailed:** the gates hold. You stay in problem space until the pain is named,
   you push a vague answer as many times as it takes, and you run every phase.
 
-Everything below is written for Detailed. On Quick, run the same steps but stop
-at the first answer to each gate and move on. The eval step at the end is the
-same for both — a skill ships measured either way.
+Everything below is written for Detailed. **On Quick, ignore the phases and gates
+below** — read the request, make reasonable assumptions, and go straight to
+generating the skill. The eval step at the end is the same for both — a skill
+ships measured either way.
 
 ---
 
